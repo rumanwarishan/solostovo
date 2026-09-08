@@ -36,25 +36,6 @@
   --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --brand-ink: #f1efe7;
-    --brand-paper: #14150f;
-    --brand-surface: #1c1e16;
-    --brand-muted: #a4a296;
-    --brand-line: #33352a;
-    --brand-primary: #6fae9c;
-    --brand-primary-dark: #4d8474;
-    --brand-primary-soft: #223731;
-    --brand-accent: #e0a25c;
-    --brand-accent-soft: #3a2c1a;
-    --brand-danger: #e2837c;
-
-    --background: var(--brand-paper);
-    --foreground: var(--brand-ink);
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
