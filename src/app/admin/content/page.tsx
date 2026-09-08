@@ -1,12 +1,19 @@
-import { getHeroContent, getValueProps, getTrustContent, getCommunityContent } from "@/data/content";
+import {
+  getHeroContent,
+  getAnnouncements,
+  getValueProps,
+  getTrustContent,
+  getCommunityContent,
+} from "@/data/content";
 import { ContentForm } from "@/components/admin/ContentForm";
 import { isDbConfigured } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminContentPage() {
-  const [hero, valueProps, trust, community] = await Promise.all([
+  const [hero, announcements, valueProps, trust, community] = await Promise.all([
     getHeroContent(),
+    getAnnouncements(),
     getValueProps(),
     getTrustContent(),
     getCommunityContent(),
@@ -28,6 +35,7 @@ export default async function AdminContentPage() {
       <div className="mt-6">
         <ContentForm
           initialHero={hero}
+          initialAnnouncements={announcements}
           initialValueProps={valueProps}
           initialTrust={trust}
           initialCommunity={community}

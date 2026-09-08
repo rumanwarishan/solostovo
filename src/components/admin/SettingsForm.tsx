@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { SiteSettings } from "@/data/content";
+import { ImageUploadField } from "./ImageUploadField";
 
 const inputClass =
   "w-full rounded-sm border border-brand-line bg-brand-surface px-3 py-2 text-sm outline-none focus:border-brand-primary";
@@ -68,25 +69,40 @@ export function SettingsForm({ initial }: { initial: SiteSettings }) {
             <label className={labelClass}>Tagline</label>
             <input className={inputClass} value={form.tagline} onChange={(e) => update("tagline", e.target.value)} />
           </div>
-          <div>
-            <label className={labelClass}>Logo image URL (optional)</label>
+          <ImageUploadField
+            label="Logo"
+            value={form.logoUrl}
+            onChange={(url) => update("logoUrl", url)}
+            hint="Leave blank to show the site title as text instead."
+          />
+          <ImageUploadField
+            label="Favicon"
+            value={form.faviconUrl}
+            onChange={(url) => update("faviconUrl", url)}
+            hint="Shown as the browser tab icon."
+          />
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="font-display text-lg font-bold">Layout</h2>
+        <div className="mt-4 flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm">
             <input
-              className={inputClass}
-              placeholder="https://…"
-              value={form.logoUrl}
-              onChange={(e) => update("logoUrl", e.target.value)}
+              type="checkbox"
+              checked={form.showHeader}
+              onChange={(e) => update("showHeader", e.target.checked)}
             />
-            <p className="mt-1 text-xs text-brand-ink/50">Leave blank to show the site title as text instead.</p>
-          </div>
-          <div>
-            <label className={labelClass}>Favicon image URL (optional)</label>
+            Show header (top nav, announcement bar, value props)
+          </label>
+          <label className="flex items-center gap-2 text-sm">
             <input
-              className={inputClass}
-              placeholder="https://…/favicon.png"
-              value={form.faviconUrl}
-              onChange={(e) => update("faviconUrl", e.target.value)}
+              type="checkbox"
+              checked={form.showFooter}
+              onChange={(e) => update("showFooter", e.target.checked)}
             />
-          </div>
+            Show footer
+          </label>
         </div>
       </section>
 

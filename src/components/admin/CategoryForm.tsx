@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Category } from "@/data/categories";
+import { ImageUploadField } from "./ImageUploadField";
 
 function slugify(text: string) {
   return text
@@ -17,6 +18,7 @@ export function CategoryForm({ category }: { category?: Category }) {
   const [slug, setSlug] = useState(category?.slug ?? "");
   const [name, setName] = useState(category?.name ?? "");
   const [description, setDescription] = useState(category?.description ?? "");
+  const [imageUrl, setImageUrl] = useState(category?.imageUrl ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export function CategoryForm({ category }: { category?: Category }) {
       const res = await fetch(url, {
         method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, name, description }),
+        body: JSON.stringify({ slug, name, description, imageUrl }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save category.");
@@ -99,6 +101,14 @@ export function CategoryForm({ category }: { category?: Category }) {
           className={inputClass}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+      <div className="mb-4">
+        <ImageUploadField
+          label="Tile photo (optional)"
+          value={imageUrl}
+          onChange={setImageUrl}
+          hint="Shown on the homepage category tile and menu. Falls back to a placeholder if left blank."
         />
       </div>
 

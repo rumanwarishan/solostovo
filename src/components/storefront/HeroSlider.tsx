@@ -7,7 +7,13 @@ import { getYouTubeId, getYouTubeBackgroundEmbedUrl } from "@/lib/youtube";
 
 const AUTOPLAY_MS = 6500;
 
-export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
+export function HeroSlider({
+  slides,
+  overlapHeader = true,
+}: {
+  slides: HeroSlide[];
+  overlapHeader?: boolean;
+}) {
   const [index, setIndex] = useState(0);
   const multi = slides.length > 1;
 
@@ -22,7 +28,9 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   if (!slide) return null;
 
   return (
-    <section className="relative z-0 -mt-16 overflow-hidden border-b border-brand-line">
+    <section
+      className={`relative z-0 overflow-hidden border-b border-brand-line ${overlapHeader ? "-mt-16" : ""}`}
+    >
       <div className="relative aspect-[16/9] w-full sm:aspect-[21/9]">
         {slides.map((s, i) => (
           <div
@@ -64,14 +72,14 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
           </div>
         ))}
 
-        <div className="container-page absolute inset-0 flex items-center">
+        <div className="container-page absolute inset-0 flex items-end pb-12 sm:items-center sm:pb-0">
           <div className="max-w-xl text-white">
             {slide.eyebrow && (
               <span className="text-xs font-semibold uppercase tracking-widest text-white/80">
                 {slide.eyebrow}
               </span>
             )}
-            <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] tracking-tight font-display sm:text-5xl">
+            <h1 className="mt-3 text-3xl font-extrabold leading-[1.05] tracking-tight font-display sm:text-5xl">
               {slide.heading}
             </h1>
             {slide.subtitle && <p className="mt-4 max-w-md text-white/80">{slide.subtitle}</p>}
@@ -79,15 +87,16 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               {slide.ctaLabel && (
                 <Link
                   href={slide.ctaHref || "#"}
-                  className="rounded-sm bg-white px-6 py-3 text-sm font-medium text-brand-ink hover:bg-white/90"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-brand-ink hover:bg-white/90"
                 >
                   {slide.ctaLabel}
+                  <span aria-hidden="true">→</span>
                 </Link>
               )}
               {slide.secondaryCtaLabel && (
                 <Link
                   href={slide.secondaryCtaHref || "#"}
-                  className="rounded-sm border border-white px-6 py-3 text-sm font-medium text-white hover:bg-white/10"
+                  className="inline-flex items-center rounded-full border border-white px-6 py-3 text-sm font-medium text-white hover:bg-white/10"
                 >
                   {slide.secondaryCtaLabel}
                 </Link>

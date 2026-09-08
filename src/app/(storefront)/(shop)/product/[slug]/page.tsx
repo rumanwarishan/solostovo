@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getProduct, compareGroup } from "@/data/products";
-import { PlaceholderImage } from "@/components/storefront/PlaceholderImage";
+import { PdpGallery } from "@/components/storefront/PdpGallery";
 import { AddToCartBox } from "@/components/storefront/AddToCartBox";
 import { CompareTable } from "@/components/storefront/CompareTable";
 import { CrossSell } from "@/components/storefront/CrossSell";
@@ -26,19 +26,7 @@ export default async function ProductPage({
   return (
     <div className="py-10">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-4 md:grid-cols-2">
-        <div className="grid grid-cols-[64px_1fr] gap-3">
-          <div className="flex flex-col gap-3">
-            {[0, 1, 2].map((i) => (
-              <PlaceholderImage
-                key={i}
-                tone={product.imageTone}
-                label={`${i + 1}`}
-                className="aspect-square w-16"
-              />
-            ))}
-          </div>
-          <PlaceholderImage tone={product.imageTone} label={product.name} className="aspect-square w-full" />
-        </div>
+        <PdpGallery product={product} />
 
         <AddToCartBox product={product} />
       </div>

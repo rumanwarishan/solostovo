@@ -3,16 +3,24 @@ import { Header } from "@/components/storefront/Header";
 import { ValuePropBar } from "@/components/storefront/ValuePropBar";
 import { CustomHtml } from "@/components/storefront/CustomHtml";
 import { getSettings, getCustomCode } from "@/data/content";
+import { getCategories } from "@/data/categories";
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
-  const [settings, customCode] = await Promise.all([getSettings(), getCustomCode()]);
+  const [settings, customCode, categories] = await Promise.all([
+    getSettings(),
+    getCustomCode(),
+    getCategories(),
+  ]);
 
   return (
     <>
-      <AnnouncementBar />
-      <Header siteTitle={settings.siteTitle} logoUrl={settings.logoUrl} />
-      {customCode.header && <CustomHtml html={customCode.header} className="container-page py-2" />}
-      <ValuePropBar />
+      {settings.showHeader && (
+        <>
+          <AnnouncementBar />
+          <Header siteTitle={settings.siteTitle} logoUrl={settings.logoUrl} categories={categories} />
+          <ValuePropBar />
+        </>
+      )}
       <main className="flex-1">
         {customCode.content && <CustomHtml html={customCode.content} className="container-page py-2" />}
         {children}

@@ -16,7 +16,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
     return NextResponse.json({ error: "Name is required." }, { status: 400 });
   }
   try {
-    await updateCategory(slug, { name: body.name, description: body.description ?? "" });
+    await updateCategory(slug, {
+      name: body.name,
+      description: body.description ?? "",
+      imageUrl: body.imageUrl || undefined,
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json(

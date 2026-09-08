@@ -12,6 +12,7 @@ export type Category = {
   slug: CategorySlug;
   name: string;
   description: string;
+  imageUrl?: string;
 };
 
 /** Used until a database is connected, and as the "seed starter catalog" content. */
@@ -48,16 +49,24 @@ type CategoryRow = {
   slug: string;
   name: string;
   description: string | null;
+  image_url: string | null;
 };
 
 function rowToCategory(row: CategoryRow): Category {
-  return { slug: row.slug, name: row.name, description: row.description ?? "" };
+  return {
+    slug: row.slug,
+    name: row.name,
+    description: row.description ?? "",
+    imageUrl: row.image_url ?? undefined,
+  };
 }
+
+const CATEGORY_COLUMNS = "slug, name, description, image_url";
 
 export async function getCategories(): Promise<Category[]> {
   if (!isDbConfigured()) return categoriesSeed;
   const rows = await query<CategoryRow[]>(
-    "SELECT slug, name, description FROM categories ORDER BY sort_order ASC, name ASC"
+    `SELECT ${CATEGORY_COLUMNS} FROM categories ORDER BY sort_order ASC, name ASC`
   );
   return rows.map(rowToCategory);
 }
@@ -65,23 +74,26 @@ export async function getCategories(): Promise<Category[]> {
 export async function getCategory(slug: string): Promise<Category | undefined> {
   if (!isDbConfigured()) return categoriesSeed.find((c) => c.slug === slug);
   const rows = await query<CategoryRow[]>(
-    "SELECT slug, name, description FROM categories WHERE slug = ? LIMIT 1",
+    `SELECT ${CATEGORY_COLUMNS} FROM categories WHERE slug = ? LIMIT 1`,
     [slug]
   );
   return rows[0] ? rowToCategory(rows[0]) : undefined;
 }
 
 export async function createCategory(input: Category): Promise<void> {
-  await query(
-    "INSERT INTO categories (slug, name, description) VALUES (?, ?, ?)",
-    [input.slug, input.name, input.description]
-  );
+  await query("INSERT INTO categories (slug, name, description, image_url) VALUES (?, ?, ?, ?)", [
+    input.slug,
+    input.name,
+    input.description,
+    input.imageUrl ?? null,
+  ]);
 }
 
 export async function updateCategory(slug: string, input: Omit<Category, "slug">): Promise<void> {
-  await query("UPDATE categories SET name = ?, description = ? WHERE slug = ?", [
+  await query("UPDATE categories SET name = ?, description = ?, image_url = ? WHERE slug = ?", [
     input.name,
     input.description,
+    input.imageUrl ?? null,
     slug,
   ]);
 }
@@ -99,8 +111,8 @@ export async function categoryCount(): Promise<number> {
 export async function seedCategories(): Promise<void> {
   for (const [i, c] of categoriesSeed.entries()) {
     await query(
-      "INSERT IGNORE INTO categories (slug, name, description, sort_order) VALUES (?, ?, ?, ?)",
-      [c.slug, c.name, c.description, i]
+      "INSERT IGNORE INTO categories (slug, name, description, image_url, sort_order) VALUES (?, ?, ?, ?, ?)",
+      [c.slug, c.name, c.description, c.imageUrl ?? null, i]
     );
   }
 }

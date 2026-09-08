@@ -15,7 +15,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Slug and name are required." }, { status: 400 });
   }
   try {
-    await createCategory({ slug: body.slug, name: body.name, description: body.description ?? "" });
+    await createCategory({
+      slug: body.slug,
+      name: body.name,
+      description: body.description ?? "",
+      imageUrl: body.imageUrl || undefined,
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json(

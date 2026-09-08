@@ -9,13 +9,18 @@ import { ReviewsTeaser } from "@/components/storefront/ReviewsTeaser";
 import { CommunityTeaser } from "@/components/storefront/CommunityTeaser";
 import { CustomHtml } from "@/components/storefront/CustomHtml";
 import { getSettings, getCustomCode } from "@/data/content";
+import { getCategories } from "@/data/categories";
 
 // Homepage content (hero slides, categories, best sellers) is DB-backed
 // and editable from /admin, so it must reflect edits without a rebuild.
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [settings, customCode] = await Promise.all([getSettings(), getCustomCode()]);
+  const [settings, customCode, categories] = await Promise.all([
+    getSettings(),
+    getCustomCode(),
+    getCategories(),
+  ]);
 
   return (
     <>
@@ -23,15 +28,16 @@ export default async function Home() {
           before Hero with nothing solid between them — that's what lets
           Hero slide up underneath it for the transparent-over-hero look.
           ValuePropBar moves to right after Hero instead of its usual spot
-          directly under the header, only on this page. The "header" custom
-          code block goes ABOVE Header here (rather than below it, like on
-          other pages) so it doesn't break that same adjacency. */}
-      <AnnouncementBar />
-      {customCode.header && <CustomHtml html={customCode.header} className="container-page py-2" />}
-      <Header siteTitle={settings.siteTitle} logoUrl={settings.logoUrl} />
+          directly under the header, only on this page. */}
+      {settings.showHeader && (
+        <>
+          <AnnouncementBar />
+          <Header siteTitle={settings.siteTitle} logoUrl={settings.logoUrl} categories={categories} />
+        </>
+      )}
       <main className="flex-1">
-        <Hero />
-        <ValuePropBar />
+        <Hero overlapHeader={settings.showHeader} />
+        {settings.showHeader && <ValuePropBar />}
         {customCode.content && <CustomHtml html={customCode.content} className="container-page py-2" />}
         <CategoryTiles />
         <BestSellers />

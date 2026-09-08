@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { setHeroContent, setValueProps, setTrustContent, setCommunityContent } from "@/data/content";
+import {
+  setHeroContent,
+  setAnnouncements,
+  setValueProps,
+  setTrustContent,
+  setCommunityContent,
+} from "@/data/content";
 import { isDbConfigured } from "@/lib/db";
 
 // Protected by src/proxy.ts (matcher covers /api/admin/:path*).
@@ -18,6 +24,7 @@ export async function PUT(req: NextRequest) {
   try {
     await Promise.all([
       setHeroContent(body.hero),
+      setAnnouncements(body.announcements),
       setValueProps(body.valueProps),
       setTrustContent(body.trust),
       setCommunityContent(body.community),

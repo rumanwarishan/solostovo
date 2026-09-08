@@ -2,7 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { HeroContent, ValuePropsContent, TrustContent, CommunityContent, HeroSlide } from "@/data/content";
+import type {
+  HeroContent,
+  AnnouncementContent,
+  ValuePropsContent,
+  TrustContent,
+  CommunityContent,
+  HeroSlide,
+} from "@/data/content";
 
 const inputClass =
   "w-full rounded-sm border border-brand-line bg-brand-surface px-3 py-2 text-sm outline-none focus:border-brand-primary";
@@ -23,17 +30,20 @@ const blankSlide: HeroSlide = {
 
 export function ContentForm({
   initialHero,
+  initialAnnouncements,
   initialValueProps,
   initialTrust,
   initialCommunity,
 }: {
   initialHero: HeroContent;
+  initialAnnouncements: AnnouncementContent;
   initialValueProps: ValuePropsContent;
   initialTrust: TrustContent;
   initialCommunity: CommunityContent;
 }) {
   const router = useRouter();
   const [hero, setHero] = useState(initialHero);
+  const [announcements, setAnnouncements] = useState(initialAnnouncements.messages);
   const [valueProps, setValueProps] = useState(initialValueProps.items);
   const [trust, setTrust] = useState(initialTrust.names);
   const [community, setCommunity] = useState(initialCommunity.posts);
@@ -55,6 +65,7 @@ export function ContentForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hero,
+          announcements: { messages: announcements.filter((v) => v.trim() !== "") },
           valueProps: { items: valueProps.filter((v) => v.trim() !== "") },
           trust: { names: trust.filter((v) => v.trim() !== "") },
           community: { posts: community.filter((p) => p.title.trim() !== "") },
@@ -166,6 +177,40 @@ export function ContentForm({
             className="self-start text-xs font-medium text-brand-primary hover:underline"
           >
             + Add slide
+          </button>
+        </div>
+      </section>
+
+      {/* Announcement bar */}
+      <section className="mb-10">
+        <h2 className="font-display text-lg font-bold">Announcement bar</h2>
+        <p className="mt-1 text-xs text-brand-ink/60">
+          The scrolling strip at the very top of every page. Add more than one to make it a
+          carousel with prev/next arrows.
+        </p>
+        <div className="mt-3 flex flex-col gap-2">
+          {announcements.map((msg, i) => (
+            <div key={i} className="flex gap-2">
+              <input
+                className={inputClass}
+                value={msg}
+                onChange={(e) => setAnnouncements(announcements.map((v, idx) => (idx === i ? e.target.value : v)))}
+              />
+              <button
+                type="button"
+                onClick={() => setAnnouncements(announcements.filter((_, idx) => idx !== i))}
+                className="px-2 text-brand-ink/40 hover:text-brand-danger"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setAnnouncements([...announcements, ""])}
+            className="self-start text-xs font-medium text-brand-primary hover:underline"
+          >
+            + Add message
           </button>
         </div>
       </section>

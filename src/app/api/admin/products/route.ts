@@ -33,6 +33,8 @@ export async function POST(req: NextRequest) {
       description: body.description,
       specs: body.specs,
       imageTone: body.imageTone,
+      imageUrl: body.imageUrl || undefined,
+      imageUrl2: body.imageUrl2 || undefined,
       crossSell: body.crossSell,
       compareGroup: body.compareGroup || undefined,
       stock: body.stock,

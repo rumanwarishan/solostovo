@@ -23,7 +23,9 @@ export type Product = {
   description: string;
   specs: Record<string, string>;
   variants?: Variant[];
-  imageTone: string; // placeholder swatch color for the product image block
+  imageTone: string; // placeholder swatch color, used when no imageUrl is set
+  imageUrl?: string; // real product photo — falls back to the placeholder tone above
+  imageUrl2?: string; // shown on hover over the primary image, if set
   crossSell?: string[]; // product ids
   compareGroup?: string; // products in the same compareGroup show in the "how this compares" module
   stock: number;
@@ -290,6 +292,8 @@ type ProductRow = {
   specs: unknown;
   variants: unknown;
   image_tone: string;
+  image_url: string | null;
+  image_url_2: string | null;
   cross_sell: unknown;
   compare_group: string | null;
   stock: number;
@@ -325,6 +329,8 @@ function rowToProduct(row: ProductRow): Product {
     specs: parseJsonColumn(row.specs, {}),
     variants: parseJsonColumn(row.variants, undefined),
     imageTone: row.image_tone,
+    imageUrl: row.image_url ?? undefined,
+    imageUrl2: row.image_url_2 ?? undefined,
     crossSell: parseJsonColumn(row.cross_sell, undefined),
     compareGroup: row.compare_group ?? undefined,
     stock: row.stock,
@@ -333,8 +339,8 @@ function rowToProduct(row: ProductRow): Product {
 
 const PRODUCT_COLUMNS = `
   id, slug, name, family, fit, fuel, price, compare_at_price, rating, review_count,
-  badges, short_description, description, specs, variants, image_tone, cross_sell,
-  compare_group, stock
+  badges, short_description, description, specs, variants, image_tone, image_url, image_url_2,
+  cross_sell, compare_group, stock
 `;
 
 export async function getProducts(): Promise<Product[]> {
@@ -404,7 +410,7 @@ function slugify(id: string) {
 export async function createProduct(input: ProductInput): Promise<string> {
   const id = input.id || slugify(`${input.family}-${input.name}-${Date.now().toString(36)}`);
   await query(
-    `INSERT INTO products (${PRODUCT_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO products (${PRODUCT_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.slug,
@@ -422,6 +428,8 @@ export async function createProduct(input: ProductInput): Promise<string> {
       JSON.stringify(input.specs ?? {}),
       JSON.stringify(input.variants ?? []),
       input.imageTone,
+      input.imageUrl ?? null,
+      input.imageUrl2 ?? null,
       JSON.stringify(input.crossSell ?? []),
       input.compareGroup ?? null,
       input.stock,
@@ -434,7 +442,7 @@ export async function updateProduct(id: string, input: ProductInput): Promise<vo
   await query(
     `UPDATE products SET slug=?, name=?, family=?, fit=?, fuel=?, price=?, compare_at_price=?,
      rating=?, review_count=?, badges=?, short_description=?, description=?, specs=?, variants=?,
-     image_tone=?, cross_sell=?, compare_group=?, stock=? WHERE id=?`,
+     image_tone=?, image_url=?, image_url_2=?, cross_sell=?, compare_group=?, stock=? WHERE id=?`,
     [
       input.slug,
       input.name,
@@ -451,6 +459,8 @@ export async function updateProduct(id: string, input: ProductInput): Promise<vo
       JSON.stringify(input.specs ?? {}),
       JSON.stringify(input.variants ?? []),
       input.imageTone,
+      input.imageUrl ?? null,
+      input.imageUrl2 ?? null,
       JSON.stringify(input.crossSell ?? []),
       input.compareGroup ?? null,
       input.stock,
@@ -466,7 +476,7 @@ export async function deleteProduct(id: string): Promise<void> {
 export async function seedProducts(): Promise<void> {
   for (const p of productsSeed) {
     await query(
-      `INSERT IGNORE INTO products (${PRODUCT_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT IGNORE INTO products (${PRODUCT_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         p.id,
         p.slug,
@@ -484,6 +494,8 @@ export async function seedProducts(): Promise<void> {
         JSON.stringify(p.specs ?? {}),
         JSON.stringify(p.variants ?? []),
         p.imageTone,
+        p.imageUrl ?? null,
+        p.imageUrl2 ?? null,
         JSON.stringify(p.crossSell ?? []),
         p.compareGroup ?? null,
         p.stock,

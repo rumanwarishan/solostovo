@@ -16,6 +16,7 @@ export type HeroSlide = {
 };
 
 export type HeroContent = { slides: HeroSlide[] };
+export type AnnouncementContent = { messages: string[] };
 export type ValuePropsContent = { items: string[] };
 export type TrustContent = { names: string[] };
 export type CommunityPost = { title: string; tag: string };
@@ -35,6 +36,14 @@ export const defaultHero: HeroContent = {
       mediaUrl: "",
       tone: "from-[#3a4a3f] to-[#141c17]",
     },
+  ],
+};
+
+export const defaultAnnouncements: AnnouncementContent = {
+  messages: [
+    `Free shipping on orders over $${brand.freeShippingThreshold}`,
+    brand.trialLine,
+    brand.warrantyLine,
   ],
 };
 
@@ -66,6 +75,8 @@ export type SiteSettings = {
   faviconUrl: string;
   footerDescription: string;
   social: { instagram: string; youtube: string; facebook: string; tiktok: string };
+  showHeader: boolean;
+  showFooter: boolean;
 };
 
 export const defaultSettings: SiteSettings = {
@@ -75,6 +86,8 @@ export const defaultSettings: SiteSettings = {
   faviconUrl: "",
   footerDescription: brand.tagline,
   social: { ...brand.social },
+  showHeader: true,
+  showFooter: true,
 };
 
 export type CustomCodeContent = { header: string; content: string; footer: string };
@@ -105,6 +118,11 @@ async function setContent(key: string, data: unknown): Promise<void> {
 // only hit the database once per request instead of once per caller.
 export const getHeroContent = cache(() => getContent<HeroContent>("hero", defaultHero));
 export const setHeroContent = (data: HeroContent) => setContent("hero", data);
+
+export const getAnnouncements = cache(() =>
+  getContent<AnnouncementContent>("announcements", defaultAnnouncements)
+);
+export const setAnnouncements = (data: AnnouncementContent) => setContent("announcements", data);
 
 export const getValueProps = cache(() => getContent<ValuePropsContent>("valueProps", defaultValueProps));
 export const setValueProps = (data: ValuePropsContent) => setContent("valueProps", data);

@@ -17,18 +17,32 @@ export async function CategoryTiles() {
     <section className="container-page py-14">
       <h2 className="font-display text-2xl font-bold">Shop by category</h2>
       <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-5">
-        {categories.map((c) => (
-          <Link key={c.slug} href={`/shop/${c.slug}`} className="group">
-            <PlaceholderImage
-              tone={tones[c.slug] ?? fallbackTone}
-              label={c.name}
-              className="aspect-square w-full"
-            />
-            <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
-              {c.name}
-            </span>
-          </Link>
-        ))}
+        {categories.map((c) =>
+          c.imageUrl ? (
+            <Link key={c.slug} href={`/shop/${c.slug}`} className="group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={c.imageUrl}
+                alt={c.name}
+                className="aspect-square w-full rounded-sm object-cover"
+              />
+              <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
+                {c.name}
+              </span>
+            </Link>
+          ) : (
+            <Link key={c.slug} href={`/shop/${c.slug}`} className="group">
+              <PlaceholderImage
+                tone={tones[c.slug] ?? fallbackTone}
+                label={c.name}
+                className="aspect-square w-full"
+              />
+              <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
+                {c.name}
+              </span>
+            </Link>
+          )
+        )}
       </div>
     </section>
   );

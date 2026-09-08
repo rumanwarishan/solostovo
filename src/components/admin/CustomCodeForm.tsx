@@ -39,8 +39,11 @@ export function CustomCodeForm({ initial }: { initial: CustomCodeContent }) {
     <div className="max-w-2xl">
       <div className="mb-6 rounded-sm border border-brand-accent/40 bg-brand-accent-soft px-3 py-2 text-sm text-brand-ink">
         ⚠ This HTML/JavaScript runs directly on your live site for every visitor. Only paste code
-        from sources you trust (e.g. an analytics or chat-widget snippet) — it has the same access
-        to your page as any other script would.
+        from sources you trust — it has the same access to your page as any other script would.
+        Note it&apos;s injected by the browser after the page loads, so it works for analytics and
+        widgets but isn&apos;t guaranteed to be seen by crawlers that don&apos;t run JavaScript
+        (most search-engine verification tags are fine; check the specific tool&apos;s requirements
+        if in doubt).
       </div>
 
       {error && (
@@ -56,11 +59,15 @@ export function CustomCodeForm({ initial }: { initial: CustomCodeContent }) {
 
       <div className="mb-6">
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-brand-ink/50">
-          Header — renders just below the top nav on every page
+          Header — injected into the page&apos;s &lt;head&gt;
         </label>
+        <p className="mb-1.5 text-xs text-brand-ink/50">
+          For analytics/tracking scripts, site-verification meta tags, custom CSS overrides.
+        </p>
         <textarea
           rows={5}
           spellCheck={false}
+          placeholder={'<meta name="google-site-verification" content="…">\n<script>…</script>'}
           className={textareaClass}
           value={form.header}
           onChange={(e) => setForm((f) => ({ ...f, header: e.target.value }))}
@@ -69,8 +76,11 @@ export function CustomCodeForm({ initial }: { initial: CustomCodeContent }) {
 
       <div className="mb-6">
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-brand-ink/50">
-          Content — renders at the top of the main content area on every page
+          Content — a visible block at the top of the page content
         </label>
+        <p className="mb-1.5 text-xs text-brand-ink/50">
+          For a visible banner or notice. Appears on every page, right below the header.
+        </p>
         <textarea
           rows={5}
           spellCheck={false}
@@ -82,8 +92,11 @@ export function CustomCodeForm({ initial }: { initial: CustomCodeContent }) {
 
       <div className="mb-6">
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-brand-ink/50">
-          Footer — renders above the copyright line on every page
+          Footer — injected just before the closing &lt;/body&gt;
         </label>
+        <p className="mb-1.5 text-xs text-brand-ink/50">
+          For chat widgets and tracking pixels that recommend loading last.
+        </p>
         <textarea
           rows={5}
           spellCheck={false}

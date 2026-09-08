@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { brand } from "@/config/brand";
 import { footerNav } from "@/data/nav";
-import { getSettings, getCustomCode } from "@/data/content";
+import { getSettings } from "@/data/content";
 import { NewsletterForm } from "./NewsletterForm";
-import { CustomHtml } from "./CustomHtml";
 
 function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
@@ -23,7 +22,7 @@ function FooterColumn({ title, links }: { title: string; links: { label: string;
 }
 
 export async function Footer() {
-  const [settings, customCode] = await Promise.all([getSettings(), getCustomCode()]);
+  const settings = await getSettings();
   const siteTitle = settings.siteTitle || brand.shortName;
   const description = settings.footerDescription || brand.tagline;
   const social = settings.social;
@@ -59,12 +58,6 @@ export async function Footer() {
           <NewsletterForm />
         </div>
       </div>
-
-      {customCode.footer && (
-        <div className="border-t border-brand-line">
-          <CustomHtml html={customCode.footer} className="container-page py-6" />
-        </div>
-      )}
 
       <div className="border-t border-brand-line">
         <div className="container-page flex flex-col items-center justify-between gap-2 py-5 text-xs text-brand-ink/50 sm:flex-row">

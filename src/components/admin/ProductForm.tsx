@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Category } from "@/data/categories";
 import type { Product } from "@/data/products";
+import { ImageUploadField } from "./ImageUploadField";
 
 export type ProductFormPayload = {
   slug: string;
@@ -20,6 +21,8 @@ export type ProductFormPayload = {
   description: string;
   specs: Record<string, string>;
   imageTone: string;
+  imageUrl: string;
+  imageUrl2: string;
   crossSell: string[];
   compareGroup: string;
   stock: number;
@@ -48,6 +51,8 @@ function toFormState(product?: Product) {
     description: product?.description ?? "",
     specs: product?.specs ?? {},
     imageTone: product?.imageTone ?? "from-[#3a4a3f] to-[#1f2b23]",
+    imageUrl: product?.imageUrl ?? "",
+    imageUrl2: product?.imageUrl2 ?? "",
     crossSell: product?.crossSell ?? [],
     compareGroup: product?.compareGroup ?? "",
     stock: product?.stock ?? 0,
@@ -343,8 +348,23 @@ export function ProductForm({
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <ImageUploadField
+          label="Photo"
+          value={form.imageUrl}
+          onChange={(url) => update("imageUrl", url)}
+          hint="Shown on cards and the product page."
+        />
+        <ImageUploadField
+          label="Hover / second photo (optional)"
+          value={form.imageUrl2}
+          onChange={(url) => update("imageUrl2", url)}
+          hint="Swaps in when a shopper hovers the card."
+        />
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Image tone (placeholder gradient classes)</label>
+          <label className={labelClass}>Placeholder color (used only if no photo is set)</label>
           <input className={inputClass} value={form.imageTone} onChange={(e) => update("imageTone", e.target.value)} />
         </div>
         <div>

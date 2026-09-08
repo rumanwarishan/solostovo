@@ -108,6 +108,23 @@ async function migrate(): Promise<void> {
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+
+  // Uploaded images (logo, favicon, product/category photos) stored as
+  // blobs in the same database — served back out via /api/media/[id].
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS media (
+      id VARCHAR(36) PRIMARY KEY,
+      mime_type VARCHAR(100) NOT NULL,
+      data LONGBLOB NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  // Idempotent column additions for databases created before these fields
+  // existed — CREATE TABLE IF NOT EXISTS above only helps on a fresh DB.
+  await db.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL`);
+  await db.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_2 VARCHAR(500) NULL`);
+  await db.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL`);
 }
 
 /** Ensures schema exists, memoized so it only runs once per server process. */

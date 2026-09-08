@@ -1,9 +1,7 @@
-import { brand } from "@/config/brand";
+import { getAnnouncements } from "@/data/content";
+import { AnnouncementCarousel } from "./AnnouncementCarousel";
 
-export function AnnouncementBar() {
-  return (
-    <div className="bg-brand-ink py-2 text-center text-xs tracking-wide text-brand-paper">
-      Free shipping on orders over ${brand.freeShippingThreshold} · {brand.trialLine}
-    </div>
-  );
+export async function AnnouncementBar() {
+  const { messages } = await getAnnouncements();
+  return <AnnouncementCarousel messages={messages} />;
 }

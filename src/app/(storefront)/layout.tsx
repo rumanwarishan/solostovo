@@ -1,6 +1,7 @@
 import { CartProvider } from "@/context/CartContext";
 import { Footer } from "@/components/storefront/Footer";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
+import { getSettings } from "@/data/content";
 
 /**
  * Cart state + footer + cart drawer are shared by every storefront route.
@@ -9,11 +10,13 @@ import { CartDrawer } from "@/components/storefront/CartDrawer";
  * hero can sit directly under the header for the transparent-over-hero
  * effect; every other route gets that chrome from (shop)/layout.tsx instead.
  */
-export default function StorefrontLayout({ children }: { children: React.ReactNode }) {
+export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSettings();
+
   return (
     <CartProvider>
       {children}
-      <Footer />
+      {settings.showFooter && <Footer />}
       <CartDrawer />
     </CartProvider>
   );
