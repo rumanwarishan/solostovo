@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { getProductById } from "@/data/products";
 import { brand } from "@/config/brand";
 import { PlaceholderImage } from "./PlaceholderImage";
 
@@ -78,52 +77,48 @@ export function CartDrawer() {
             <p className="text-sm text-brand-ink/60">Your cart is empty.</p>
           ) : (
             <ul className="flex flex-col gap-4">
-              {lines.map((line) => {
-                const product = getProductById(line.productId);
-                if (!product) return null;
-                return (
-                  <li key={line.productId} className="flex gap-3">
-                    <PlaceholderImage
-                      tone={product.imageTone}
-                      label={product.name}
-                      className="h-16 w-16 flex-shrink-0"
-                    />
-                    <div className="flex flex-1 flex-col gap-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <Link href={`/product/${product.slug}`} onClick={closeCart} className="text-sm font-medium hover:text-brand-primary">
-                          {product.name}
-                        </Link>
-                        <span className="tabular text-sm">${(product.price * line.quantity).toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center rounded-sm border border-brand-line">
-                          <button
-                            className="h-7 w-7 text-sm"
-                            aria-label={`Decrease ${product.name} quantity`}
-                            onClick={() => setQuantity(product.id, line.quantity - 1)}
-                          >
-                            −
-                          </button>
-                          <span className="tabular w-6 text-center text-sm">{line.quantity}</span>
-                          <button
-                            className="h-7 w-7 text-sm"
-                            aria-label={`Increase ${product.name} quantity`}
-                            onClick={() => setQuantity(product.id, line.quantity + 1)}
-                          >
-                            +
-                          </button>
-                        </div>
+              {lines.map((line) => (
+                <li key={line.productId} className="flex gap-3">
+                  <PlaceholderImage
+                    tone={line.imageTone}
+                    label={line.name}
+                    className="h-16 w-16 flex-shrink-0"
+                  />
+                  <div className="flex flex-1 flex-col gap-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <Link href={`/product/${line.slug}`} onClick={closeCart} className="text-sm font-medium hover:text-brand-primary">
+                        {line.name}
+                      </Link>
+                      <span className="tabular text-sm">${(line.price * line.quantity).toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center rounded-sm border border-brand-line">
                         <button
-                          className="text-xs text-brand-ink/50 underline hover:text-brand-danger"
-                          onClick={() => removeItem(product.id)}
+                          className="h-7 w-7 text-sm"
+                          aria-label={`Decrease ${line.name} quantity`}
+                          onClick={() => setQuantity(line.productId, line.quantity - 1)}
                         >
-                          Remove
+                          −
+                        </button>
+                        <span className="tabular w-6 text-center text-sm">{line.quantity}</span>
+                        <button
+                          className="h-7 w-7 text-sm"
+                          aria-label={`Increase ${line.name} quantity`}
+                          onClick={() => setQuantity(line.productId, line.quantity + 1)}
+                        >
+                          +
                         </button>
                       </div>
+                      <button
+                        className="text-xs text-brand-ink/50 underline hover:text-brand-danger"
+                        onClick={() => removeItem(line.productId)}
+                      >
+                        Remove
+                      </button>
                     </div>
-                  </li>
-                );
-              })}
+                  </div>
+                </li>
+              ))}
             </ul>
           )}
         </div>

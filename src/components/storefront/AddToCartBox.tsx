@@ -47,7 +47,7 @@ export function AddToCartBox({ product }: { product: Product }) {
           </button>
         </div>
         <button
-          onClick={() => addItem(product.id, quantity)}
+          onClick={() => addItem(product, quantity)}
           className="flex-1 rounded-sm bg-brand-primary py-3 text-sm font-medium text-white hover:bg-brand-primary-dark"
         >
           Add to cart

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrder, orderItemsWithProducts } from "@/data/orders";
-import { StatusPill } from "@/components/admin/StatusPill";
+import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -9,10 +11,10 @@ export default async function AdminOrderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const order = getOrder(id);
+  const order = await getOrder(id);
   if (!order) notFound();
 
-  const items = orderItemsWithProducts(order);
+  const items = await orderItemsWithProducts(order);
 
   return (
     <div>
@@ -21,7 +23,7 @@ export default async function AdminOrderDetailPage({
       </Link>
       <div className="mt-2 flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">{order.id}</h1>
-        <StatusPill status={order.status} />
+        <OrderStatusForm orderId={order.id} status={order.status} />
       </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">

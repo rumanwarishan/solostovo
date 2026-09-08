@@ -1,8 +1,9 @@
 import { getProductById } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 
-export function CrossSell({ ids }: { ids: string[] }) {
-  const items = ids.map(getProductById).filter((p): p is NonNullable<typeof p> => Boolean(p));
+export async function CrossSell({ ids }: { ids: string[] }) {
+  const resolved = await Promise.all(ids.map(getProductById));
+  const items = resolved.filter((p): p is NonNullable<typeof p> => Boolean(p));
   if (items.length === 0) return null;
 
   return (

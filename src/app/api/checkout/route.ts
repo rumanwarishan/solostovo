@@ -23,10 +23,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Prices always come from the server-side catalog, never the client —
-  // never trust a price submitted by the browser.
-  const line_items = lines
-    .map((line) => {
-      const product = getProductById(line.productId);
+  // never trust a price submitted by the browser, even if the cart UI
+  // already shows a snapshot of it.
+  const resolved = await Promise.all(
+    lines.map(async (line) => {
+      const product = await getProductById(line.productId);
       if (!product || line.quantity < 1) return null;
       return {
         quantity: line.quantity,
@@ -37,7 +38,8 @@ export async function POST(req: NextRequest) {
         },
       };
     })
-    .filter((li): li is NonNullable<typeof li> => li !== null);
+  );
+  const line_items = resolved.filter((li): li is NonNullable<typeof li> => li !== null);
 
   if (line_items.length === 0) {
     return NextResponse.json({ error: "No valid items in cart." }, { status: 400 });

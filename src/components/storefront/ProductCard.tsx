@@ -39,7 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </div>
       <button
-        onClick={() => addItem(product.id)}
+        onClick={() => addItem(product)}
         className="mt-3 rounded-sm border border-brand-line py-2 text-xs font-medium hover:border-brand-primary hover:text-brand-primary"
       >
         Add to cart

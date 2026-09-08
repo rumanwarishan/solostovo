@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { getAllOrders } from "@/data/orders";
-import { products } from "@/data/products";
+import { getProducts } from "@/data/products";
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusPill } from "@/components/admin/StatusPill";
 
-export default function AdminDashboard() {
-  const orders = getAllOrders();
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboard() {
+  const [orders, products] = await Promise.all([getAllOrders(), getProducts()]);
   const revenue = orders
     .filter((o) => o.status !== "refunded")
     .reduce((sum, o) => sum + o.total, 0);

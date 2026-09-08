@@ -1,3 +1,4 @@
+import { isDbConfigured, query } from "@/lib/db";
 import type { CategorySlug } from "./categories";
 
 export type Variant = {
@@ -28,7 +29,8 @@ export type Product = {
   stock: number;
 };
 
-export const products: Product[] = [
+/** Used until a database is connected, and as the "seed starter catalog" content. */
+export const productsSeed: Product[] = [
   {
     id: "fp-ember-18",
     slug: "ember-18",
@@ -271,25 +273,221 @@ export const products: Product[] = [
   },
 ];
 
-export function getProduct(slug: string): Product | undefined {
-  return products.find((p) => p.slug === slug);
+type ProductRow = {
+  id: string;
+  slug: string;
+  name: string;
+  family: string;
+  fit: string | null;
+  fuel: string | null;
+  price: string;
+  compare_at_price: string | null;
+  rating: string;
+  review_count: number;
+  badges: unknown;
+  short_description: string | null;
+  description: string | null;
+  specs: unknown;
+  variants: unknown;
+  image_tone: string;
+  cross_sell: unknown;
+  compare_group: string | null;
+  stock: number;
+};
+
+function parseJsonColumn<T>(value: unknown, fallback: T): T {
+  if (value == null) return fallback;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return fallback;
+    }
+  }
+  return value as T;
 }
 
-export function getProductById(id: string): Product | undefined {
-  return products.find((p) => p.id === id);
+function rowToProduct(row: ProductRow): Product {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    family: row.family,
+    fit: (row.fit as Product["fit"]) ?? undefined,
+    fuel: (row.fuel as Product["fuel"]) ?? undefined,
+    price: Number(row.price),
+    compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : undefined,
+    rating: Number(row.rating),
+    reviewCount: row.review_count,
+    badges: parseJsonColumn(row.badges, undefined),
+    shortDescription: row.short_description ?? "",
+    description: row.description ?? "",
+    specs: parseJsonColumn(row.specs, {}),
+    variants: parseJsonColumn(row.variants, undefined),
+    imageTone: row.image_tone,
+    crossSell: parseJsonColumn(row.cross_sell, undefined),
+    compareGroup: row.compare_group ?? undefined,
+    stock: row.stock,
+  };
 }
 
-export function productsByFamily(family: CategorySlug): Product[] {
-  return products.filter((p) => p.family === family);
+const PRODUCT_COLUMNS = `
+  id, slug, name, family, fit, fuel, price, compare_at_price, rating, review_count,
+  badges, short_description, description, specs, variants, image_tone, cross_sell,
+  compare_group, stock
+`;
+
+export async function getProducts(): Promise<Product[]> {
+  if (!isDbConfigured()) return productsSeed;
+  const rows = await query<ProductRow[]>(`SELECT ${PRODUCT_COLUMNS} FROM products ORDER BY name ASC`);
+  return rows.map(rowToProduct);
 }
 
-export function compareGroup(product: Product): Product[] {
+export async function getProduct(slug: string): Promise<Product | undefined> {
+  if (!isDbConfigured()) return productsSeed.find((p) => p.slug === slug);
+  const rows = await query<ProductRow[]>(
+    `SELECT ${PRODUCT_COLUMNS} FROM products WHERE slug = ? LIMIT 1`,
+    [slug]
+  );
+  return rows[0] ? rowToProduct(rows[0]) : undefined;
+}
+
+export async function getProductById(id: string): Promise<Product | undefined> {
+  if (!isDbConfigured()) return productsSeed.find((p) => p.id === id);
+  const rows = await query<ProductRow[]>(`SELECT ${PRODUCT_COLUMNS} FROM products WHERE id = ? LIMIT 1`, [
+    id,
+  ]);
+  return rows[0] ? rowToProduct(rows[0]) : undefined;
+}
+
+export async function productsByFamily(family: CategorySlug): Promise<Product[]> {
+  if (!isDbConfigured()) return productsSeed.filter((p) => p.family === family);
+  const rows = await query<ProductRow[]>(
+    `SELECT ${PRODUCT_COLUMNS} FROM products WHERE family = ? ORDER BY name ASC`,
+    [family]
+  );
+  return rows.map(rowToProduct);
+}
+
+export async function compareGroup(product: Product): Promise<Product[]> {
   if (!product.compareGroup) return [];
-  return products.filter(
-    (p) => p.compareGroup === product.compareGroup && p.id !== product.id
+  if (!isDbConfigured()) {
+    return productsSeed.filter((p) => p.compareGroup === product.compareGroup && p.id !== product.id);
+  }
+  const rows = await query<ProductRow[]>(
+    `SELECT ${PRODUCT_COLUMNS} FROM products WHERE compare_group = ? AND id != ?`,
+    [product.compareGroup, product.id]
+  );
+  return rows.map(rowToProduct);
+}
+
+export async function bestSellers(): Promise<Product[]> {
+  const all = await getProducts();
+  return all.filter((p) => p.badges?.includes("bestseller"));
+}
+
+export async function productCount(): Promise<number> {
+  if (!isDbConfigured()) return productsSeed.length;
+  const rows = await query<{ count: number }[]>("SELECT COUNT(*) as count FROM products");
+  return Number(rows[0]?.count ?? 0);
+}
+
+type ProductInput = Omit<Product, "id"> & { id?: string };
+
+function slugify(id: string) {
+  return id
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export async function createProduct(input: ProductInput): Promise<string> {
+  const id = input.id || slugify(`${input.family}-${input.name}-${Date.now().toString(36)}`);
+  await query(
+    `INSERT INTO products (${PRODUCT_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      input.slug,
+      input.name,
+      input.family,
+      input.fit ?? null,
+      input.fuel ?? null,
+      input.price,
+      input.compareAtPrice ?? null,
+      input.rating,
+      input.reviewCount,
+      JSON.stringify(input.badges ?? []),
+      input.shortDescription,
+      input.description,
+      JSON.stringify(input.specs ?? {}),
+      JSON.stringify(input.variants ?? []),
+      input.imageTone,
+      JSON.stringify(input.crossSell ?? []),
+      input.compareGroup ?? null,
+      input.stock,
+    ]
+  );
+  return id;
+}
+
+export async function updateProduct(id: string, input: ProductInput): Promise<void> {
+  await query(
+    `UPDATE products SET slug=?, name=?, family=?, fit=?, fuel=?, price=?, compare_at_price=?,
+     rating=?, review_count=?, badges=?, short_description=?, description=?, specs=?, variants=?,
+     image_tone=?, cross_sell=?, compare_group=?, stock=? WHERE id=?`,
+    [
+      input.slug,
+      input.name,
+      input.family,
+      input.fit ?? null,
+      input.fuel ?? null,
+      input.price,
+      input.compareAtPrice ?? null,
+      input.rating,
+      input.reviewCount,
+      JSON.stringify(input.badges ?? []),
+      input.shortDescription,
+      input.description,
+      JSON.stringify(input.specs ?? {}),
+      JSON.stringify(input.variants ?? []),
+      input.imageTone,
+      JSON.stringify(input.crossSell ?? []),
+      input.compareGroup ?? null,
+      input.stock,
+      id,
+    ]
   );
 }
 
-export function bestSellers(): Product[] {
-  return products.filter((p) => p.badges?.includes("bestseller"));
+export async function deleteProduct(id: string): Promise<void> {
+  await query("DELETE FROM products WHERE id = ?", [id]);
+}
+
+export async function seedProducts(): Promise<void> {
+  for (const p of productsSeed) {
+    await query(
+      `INSERT IGNORE INTO products (${PRODUCT_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        p.id,
+        p.slug,
+        p.name,
+        p.family,
+        p.fit ?? null,
+        p.fuel ?? null,
+        p.price,
+        p.compareAtPrice ?? null,
+        p.rating,
+        p.reviewCount,
+        JSON.stringify(p.badges ?? []),
+        p.shortDescription,
+        p.description,
+        JSON.stringify(p.specs ?? {}),
+        JSON.stringify(p.variants ?? []),
+        p.imageTone,
+        JSON.stringify(p.crossSell ?? []),
+        p.compareGroup ?? null,
+        p.stock,
+      ]
+    );
+  }
 }

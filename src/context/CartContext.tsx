@@ -8,11 +8,23 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getProductById } from "@/data/products";
 
 export type CartLine = {
   productId: string;
+  slug: string;
+  name: string;
+  price: number;
+  imageTone: string;
   quantity: number;
+};
+
+/** The bits of a Product needed to add it to the cart, snapshotted at add-time. */
+export type CartableProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  imageTone: string;
 };
 
 type CartContextValue = {
@@ -20,7 +32,7 @@ type CartContextValue = {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (productId: string, quantity?: number) => void;
+  addItem: (product: CartableProduct, quantity?: number) => void;
   removeItem: (productId: string) => void;
   setQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -29,7 +41,7 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "cart:v1";
+const STORAGE_KEY = "cart:v2";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -58,15 +70,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [lines, hydrated]);
 
-  const addItem = (productId: string, quantity = 1) => {
+  const addItem = (product: CartableProduct, quantity = 1) => {
     setLines((prev) => {
-      const existing = prev.find((l) => l.productId === productId);
+      const existing = prev.find((l) => l.productId === product.id);
       if (existing) {
         return prev.map((l) =>
-          l.productId === productId ? { ...l, quantity: l.quantity + quantity } : l
+          l.productId === product.id ? { ...l, quantity: l.quantity + quantity } : l
         );
       }
-      return [...prev, { productId, quantity }];
+      return [
+        ...prev,
+        {
+          productId: product.id,
+          slug: product.slug,
+          name: product.name,
+          price: product.price,
+          imageTone: product.imageTone,
+          quantity,
+        },
+      ];
     });
     setIsOpen(true);
   };
@@ -85,11 +107,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = () => setLines([]);
 
   const subtotal = useMemo(
-    () =>
-      lines.reduce((sum, line) => {
-        const product = getProductById(line.productId);
-        return sum + (product ? product.price * line.quantity : 0);
-      }, 0),
+    () => lines.reduce((sum, line) => sum + line.price * line.quantity, 0),
     [lines]
   );
 

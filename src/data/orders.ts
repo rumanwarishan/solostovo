@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { isDbConfigured, query } from "@/lib/db";
 import { getProductById } from "./products";
 
 export type OrderStatus = "paid" | "processing" | "shipped" | "refunded";
 
 export type OrderItem = {
-  productId: string;
+  productId: string | null;
   name: string;
   quantity: number;
   unitPrice: number;
@@ -22,7 +23,7 @@ export type Order = {
   source: "seed" | "stripe";
 };
 
-/** Seed orders so the admin dashboard has something to show on first run. */
+/** Used until a database is connected. */
 const seedOrders: Order[] = [
   {
     id: "ORD-1001",
@@ -83,10 +84,10 @@ const seedOrders: Order[] = [
 const GENERATED_ORDERS_PATH = path.join(process.cwd(), "data", "orders.generated.json");
 
 /**
- * Orders created by real Stripe checkouts land here (written by the webhook
- * route). This is a flat-file store for demo/dev purposes only — swap for a
- * real database (Postgres, etc.) before running this in production, since
- * serverless deployments won't reliably persist local files across invocations.
+ * Fallback flat-file store used only when no database is configured — see
+ * src/data/orders.ts history. Once DB_* env vars are set, orders live in
+ * the `orders` / `order_items` tables instead (serverless hosts don't
+ * reliably persist local files across invocations anyway).
  */
 function readGeneratedOrders(): Order[] {
   try {
@@ -97,26 +98,108 @@ function readGeneratedOrders(): Order[] {
   }
 }
 
-export function appendGeneratedOrder(order: Order) {
+function appendGeneratedOrderFile(order: Order) {
   const existing = readGeneratedOrders();
   existing.unshift(order);
   fs.mkdirSync(path.dirname(GENERATED_ORDERS_PATH), { recursive: true });
   fs.writeFileSync(GENERATED_ORDERS_PATH, JSON.stringify(existing, null, 2));
 }
 
-export function getAllOrders(): Order[] {
-  return [...readGeneratedOrders(), ...seedOrders].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+type OrderRow = {
+  id: string;
+  customer_email: string;
+  customer_name: string;
+  total: string;
+  status: OrderStatus;
+  source: "seed" | "stripe";
+  created_at: string;
+};
+
+type OrderItemRow = {
+  order_id: string;
+  product_id: string | null;
+  name: string;
+  quantity: number;
+  unit_price: string;
+};
+
+async function attachItems(orders: OrderRow[]): Promise<Order[]> {
+  if (orders.length === 0) return [];
+  const ids = orders.map((o) => o.id);
+  const items = await query<OrderItemRow[]>(
+    `SELECT order_id, product_id, name, quantity, unit_price FROM order_items WHERE order_id IN (${ids
+      .map(() => "?")
+      .join(",")})`,
+    ids
   );
-}
-
-export function getOrder(id: string): Order | undefined {
-  return getAllOrders().find((o) => o.id === id);
-}
-
-export function orderItemsWithProducts(order: Order) {
-  return order.items.map((item) => ({
-    ...item,
-    product: getProductById(item.productId),
+  return orders.map((o) => ({
+    id: o.id,
+    customerEmail: o.customer_email,
+    customerName: o.customer_name,
+    total: Number(o.total),
+    status: o.status,
+    source: o.source,
+    createdAt: new Date(o.created_at).toISOString(),
+    items: items
+      .filter((i) => i.order_id === o.id)
+      .map((i) => ({
+        productId: i.product_id,
+        name: i.name,
+        quantity: i.quantity,
+        unitPrice: Number(i.unit_price),
+      })),
   }));
+}
+
+export async function getAllOrders(): Promise<Order[]> {
+  if (!isDbConfigured()) {
+    return [...readGeneratedOrders(), ...seedOrders].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+  const rows = await query<OrderRow[]>("SELECT * FROM orders ORDER BY created_at DESC");
+  return attachItems(rows);
+}
+
+export async function getOrder(id: string): Promise<Order | undefined> {
+  if (!isDbConfigured()) {
+    return [...readGeneratedOrders(), ...seedOrders].find((o) => o.id === id);
+  }
+  const rows = await query<OrderRow[]>("SELECT * FROM orders WHERE id = ? LIMIT 1", [id]);
+  if (!rows[0]) return undefined;
+  const [order] = await attachItems(rows);
+  return order;
+}
+
+export async function createOrder(order: Order): Promise<void> {
+  if (!isDbConfigured()) {
+    appendGeneratedOrderFile(order);
+    return;
+  }
+  await query(
+    "INSERT INTO orders (id, customer_email, customer_name, total, status, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [order.id, order.customerEmail, order.customerName, order.total, order.status, order.source, order.createdAt]
+  );
+  for (const item of order.items) {
+    await query(
+      "INSERT INTO order_items (order_id, product_id, name, quantity, unit_price) VALUES (?, ?, ?, ?, ?)",
+      [order.id, item.productId, item.name, item.quantity, item.unitPrice]
+    );
+  }
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<void> {
+  if (!isDbConfigured()) {
+    throw new Error("Connect a database to update order status (see README).");
+  }
+  await query("UPDATE orders SET status = ? WHERE id = ?", [status, id]);
+}
+
+export async function orderItemsWithProducts(order: Order) {
+  return Promise.all(
+    order.items.map(async (item) => ({
+      ...item,
+      product: item.productId ? await getProductById(item.productId) : undefined,
+    }))
+  );
 }

@@ -2,8 +2,10 @@ import Link from "next/link";
 import { getAllOrders } from "@/data/orders";
 import { StatusPill } from "@/components/admin/StatusPill";
 
-export default function AdminOrdersPage() {
-  const orders = getAllOrders();
+export const dynamic = "force-dynamic";
+
+export default async function AdminOrdersPage() {
+  const orders = await getAllOrders();
 
   return (
     <div>

@@ -1,8 +1,8 @@
 import { bestSellers } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 
-export function BestSellers() {
-  const items = bestSellers();
+export async function BestSellers() {
+  const items = await bestSellers();
   if (items.length === 0) return null;
 
   return (

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
-import { appendGeneratedOrder, type Order } from "@/data/orders";
+import { createOrder, type Order } from "@/data/orders";
 
 /**
  * Receives Stripe webhook events. In dev, forward events to this route with:
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       customerEmail: session.customer_details?.email ?? "unknown@example.com",
       customerName: session.customer_details?.name ?? "Unknown",
       items: lineItems.data.map((li) => ({
-        productId: li.price?.product?.toString() ?? "unknown",
+        productId: null,
         name: li.description ?? "Item",
         quantity: li.quantity ?? 1,
         unitPrice: (li.price?.unit_amount ?? 0) / 100,
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       source: "stripe",
     };
 
-    appendGeneratedOrder(order);
+    await createOrder(order);
   }
 
   return NextResponse.json({ received: true });

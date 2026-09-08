@@ -1,13 +1,11 @@
 import Link from "next/link";
+import { getCommunityContent } from "@/data/content";
 import { PlaceholderImage } from "./PlaceholderImage";
 
-const posts = [
-  { title: "5 tips for a truly smokeless fire", tag: "Fire pits" },
-  { title: "Your first wood-fired pizza, step by step", tag: "Pizza ovens" },
-  { title: "How to size a fire pit for your patio", tag: "Buying guide" },
-];
+export async function CommunityTeaser() {
+  const { posts } = await getCommunityContent();
+  if (posts.length === 0) return null;
 
-export function CommunityTeaser() {
   return (
     <section className="border-t border-brand-line py-14">
       <div className="container-page">
