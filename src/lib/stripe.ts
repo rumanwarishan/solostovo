@@ -2,6 +2,14 @@ import Stripe from "stripe";
 
 let stripeClient: Stripe | null = null;
 
+export function isStripeConfigured(): boolean {
+  return Boolean(process.env.STRIPE_SECRET_KEY);
+}
+
+export function isStripeWebhookConfigured(): boolean {
+  return Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+}
+
 /**
  * Lazily-constructed Stripe client. Throws only when a route actually tries
  * to use Stripe without a key configured, instead of at import/build time —

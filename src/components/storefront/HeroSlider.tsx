@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { HeroSlide } from "@/data/content";
+import { getYouTubeId, getYouTubeBackgroundEmbedUrl } from "@/lib/youtube";
 
 const AUTOPLAY_MS = 6500;
 
@@ -21,7 +22,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   if (!slide) return null;
 
   return (
-    <section className="relative overflow-hidden border-b border-brand-line">
+    <section className="relative z-0 -mt-16 overflow-hidden border-b border-brand-line">
       <div className="relative aspect-[16/9] w-full sm:aspect-[21/9]">
         {slides.map((s, i) => (
           <div
@@ -31,7 +32,18 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
             }`}
             aria-hidden={i !== index}
           >
-            {s.mediaType === "video" && s.mediaUrl ? (
+            {s.mediaType === "video" && s.mediaUrl && getYouTubeId(s.mediaUrl) ? (
+              <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <iframe
+                  className="absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2"
+                  src={getYouTubeBackgroundEmbedUrl(getYouTubeId(s.mediaUrl)!)}
+                  title=""
+                  allow="autoplay; encrypted-media"
+                  frameBorder={0}
+                  tabIndex={-1}
+                />
+              </div>
+            ) : s.mediaType === "video" && s.mediaUrl ? (
               <video
                 className="h-full w-full object-cover"
                 src={s.mediaUrl}

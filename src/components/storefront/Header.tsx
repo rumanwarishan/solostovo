@@ -1,20 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { brand } from "@/config/brand";
 import { familyNav, needNav } from "@/data/nav";
 import { useCart } from "@/context/CartContext";
 
-export function Header() {
+const SCROLL_THRESHOLD = 48;
+
+export function Header({
+  siteTitle,
+  logoUrl,
+}: {
+  siteTitle?: string;
+  logoUrl?: string;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  // Only the homepage has a hero for the header to float over — everywhere
+  // else it's always in its normal solid state.
+  const [scrolled, setScrolled] = useState(!isHome);
+
+  useEffect(() => {
+    if (!isHome) return;
+    function onScroll() {
+      setScrolled(window.scrollY > SCROLL_THRESHOLD);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
+  const transparent = isHome && !scrolled;
+
+  const chrome = transparent
+    ? "bg-transparent border-transparent"
+    : "bg-brand-surface/95 backdrop-blur border-b border-brand-line";
+  const textStrong = transparent ? "text-white" : "text-brand-ink";
+  const textMuted = transparent ? "text-white/85" : "text-brand-ink/80";
+  const iconColor = transparent
+    ? "text-white/90 hover:text-white"
+    : "text-brand-ink/70 hover:text-brand-primary";
+  const menuButtonBorder = transparent ? "border-white/40" : "border-brand-line";
+  const cartButtonBorder = transparent
+    ? "border-white/40 text-white hover:border-white"
+    : "border-brand-line hover:border-brand-primary";
+  const divider = transparent ? "bg-white/30" : "bg-brand-line";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-brand-line bg-brand-surface/95 backdrop-blur">
+    <header className={`sticky top-0 z-40 transition-colors duration-300 ${chrome}`}>
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-brand-line md:hidden"
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-sm border md:hidden ${menuButtonBorder} ${textStrong}`}
           aria-label="Toggle menu"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((o) => !o)}
@@ -25,8 +66,13 @@ export function Header() {
           </svg>
         </button>
 
-        <Link href="/" className="font-display text-xl font-bold tracking-tight">
-          {brand.shortName}
+        <Link href="/" className={`flex items-center gap-2 font-display text-xl font-bold tracking-tight ${textStrong}`}>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={siteTitle || brand.shortName} className="h-8 w-auto" />
+          ) : (
+            siteTitle || brand.shortName
+          )}
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-6 md:flex" aria-label="Primary">
@@ -34,17 +80,17 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-brand-ink/80 transition-colors hover:text-brand-primary"
+              className={`text-sm transition-colors hover:text-brand-primary ${textMuted}`}
             >
               {link.label}
             </Link>
           ))}
-          <span className="h-4 w-px bg-brand-line" aria-hidden="true" />
+          <span className={`h-4 w-px ${divider}`} aria-hidden="true" />
           {familyNav.map((group) => (
             <div key={group.href} className="group relative">
               <Link
                 href={group.href}
-                className="text-sm font-medium text-brand-ink transition-colors hover:text-brand-primary"
+                className={`text-sm font-medium transition-colors hover:text-brand-primary ${textStrong}`}
               >
                 {group.label}
               </Link>
@@ -67,7 +113,7 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <button
-            className="hidden h-9 w-9 items-center justify-center rounded-sm text-brand-ink/70 hover:text-brand-primary sm:inline-flex"
+            className={`hidden h-9 w-9 items-center justify-center rounded-sm sm:inline-flex ${iconColor}`}
             aria-label="Search"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -76,7 +122,7 @@ export function Header() {
             </svg>
           </button>
           <button
-            className="hidden h-9 w-9 items-center justify-center rounded-sm text-brand-ink/70 hover:text-brand-primary sm:inline-flex"
+            className={`hidden h-9 w-9 items-center justify-center rounded-sm sm:inline-flex ${iconColor}`}
             aria-label="Account"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -85,7 +131,7 @@ export function Header() {
             </svg>
           </button>
           <button
-            className="relative inline-flex h-9 items-center gap-1.5 rounded-sm border border-brand-line px-3 text-sm hover:border-brand-primary"
+            className={`relative inline-flex h-9 items-center gap-1.5 rounded-sm border px-3 text-sm ${cartButtonBorder}`}
             aria-label={`Cart, ${itemCount} item${itemCount === 1 ? "" : "s"}`}
             onClick={openCart}
           >
@@ -104,7 +150,7 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t border-brand-line px-4 pb-4 md:hidden" aria-label="Mobile">
+        <nav className="border-t border-brand-line bg-brand-surface px-4 pb-4 md:hidden" aria-label="Mobile">
           <div className="flex flex-col gap-1 pt-2">
             {needNav.map((link) => (
               <Link
@@ -121,7 +167,7 @@ export function Header() {
               <Link
                 key={group.href}
                 href={group.href}
-                className="rounded-sm px-2 py-2 text-sm font-medium"
+                className="rounded-sm px-2 py-2 text-sm font-medium text-brand-ink"
                 onClick={() => setMobileOpen(false)}
               >
                 {group.label}

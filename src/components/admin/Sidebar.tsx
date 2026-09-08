@@ -26,14 +26,37 @@ const icons: Record<string, React.ReactNode> = {
       strokeLinejoin="round"
     />
   ),
+  payments: (
+    <path d="M2.5 5.5h15v9h-15v-9Zm0 3.5h15M5.5 12h3" strokeLinejoin="round" />
+  ),
+  code: <path d="M7 5.5 2.5 10 7 14.5M13 5.5l4.5 4.5-4.5 4.5M11.5 3.5l-3 13" strokeLinejoin="round" />,
+  settings: (
+    <path
+      d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm7-2.5a6.9 6.9 0 0 0-.14-1.4l1.8-1.4-1.5-2.6-2.1.85a7 7 0 0 0-2.42-1.4L12.3 2h-4.6l-.34 2.15a7 7 0 0 0-2.42 1.4l-2.1-.85-1.5 2.6 1.8 1.4A6.9 6.9 0 0 0 3 10c0 .48.05.94.14 1.4l-1.8 1.4 1.5 2.6 2.1-.85a7 7 0 0 0 2.42 1.4L7.7 18h4.6l.34-2.15a7 7 0 0 0 2.42-1.4l2.1.85 1.5-2.6-1.8-1.4c.09-.46.14-.92.14-1.4Z"
+      strokeLinejoin="round"
+    />
+  ),
 };
 
-const links = [
-  { href: "/admin", label: "Dashboard", exact: true, icon: "dashboard" },
-  { href: "/admin/orders", label: "Orders", icon: "orders" },
-  { href: "/admin/products", label: "Products", icon: "products" },
-  { href: "/admin/categories", label: "Categories", icon: "categories" },
-  { href: "/admin/content", label: "Content", icon: "content" },
+const groups = [
+  {
+    label: "Store",
+    links: [
+      { href: "/admin", label: "Dashboard", exact: true, icon: "dashboard" },
+      { href: "/admin/orders", label: "Orders", icon: "orders" },
+      { href: "/admin/products", label: "Products", icon: "products" },
+      { href: "/admin/categories", label: "Categories", icon: "categories" },
+      { href: "/admin/payments", label: "Payments", icon: "payments" },
+    ],
+  },
+  {
+    label: "Site",
+    links: [
+      { href: "/admin/content", label: "Content", icon: "content" },
+      { href: "/admin/custom-code", label: "Custom code", icon: "code" },
+      { href: "/admin/settings", label: "Settings", icon: "settings" },
+    ],
+  },
 ] as const;
 
 export function Sidebar() {
@@ -47,24 +70,34 @@ export function Sidebar() {
           Admin
         </span>
       </div>
-      <nav className="flex flex-col gap-1 p-3">
-        {links.map((link) => {
-          const active = "exact" in link && link.exact ? pathname === link.href : pathname.startsWith(link.href);
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`flex items-center gap-3 rounded-sm px-3 py-2 text-sm ${
-                active ? "bg-white/10 font-medium text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" className="flex-shrink-0">
-                {icons[link.icon]}
-              </svg>
-              {link.label}
-            </Link>
-          );
-        })}
+      <nav className="flex flex-1 flex-col gap-5 overflow-y-auto p-3">
+        {groups.map((group) => (
+          <div key={group.label}>
+            <div className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wide text-white/30">
+              {group.label}
+            </div>
+            <div className="flex flex-col gap-1">
+              {group.links.map((link) => {
+                const active =
+                  "exact" in link && link.exact ? pathname === link.href : pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-3 rounded-sm px-3 py-2 text-sm ${
+                      active ? "bg-white/10 font-medium text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" className="flex-shrink-0">
+                      {icons[link.icon]}
+                    </svg>
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
       <div className="mt-auto border-t border-white/10 p-3">
         <Link href="/" className="block rounded-sm px-3 py-2 text-xs text-white/40 hover:text-white/70">

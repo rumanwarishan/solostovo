@@ -1,23 +1,44 @@
+import { AnnouncementBar } from "@/components/storefront/AnnouncementBar";
+import { Header } from "@/components/storefront/Header";
 import { Hero } from "@/components/storefront/Hero";
+import { ValuePropBar } from "@/components/storefront/ValuePropBar";
 import { CategoryTiles } from "@/components/storefront/CategoryTiles";
 import { BestSellers } from "@/components/storefront/BestSellers";
 import { TrustStrip } from "@/components/storefront/TrustStrip";
 import { ReviewsTeaser } from "@/components/storefront/ReviewsTeaser";
 import { CommunityTeaser } from "@/components/storefront/CommunityTeaser";
+import { CustomHtml } from "@/components/storefront/CustomHtml";
+import { getSettings, getCustomCode } from "@/data/content";
 
 // Homepage content (hero slides, categories, best sellers) is DB-backed
 // and editable from /admin, so it must reflect edits without a rebuild.
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
+  const [settings, customCode] = await Promise.all([getSettings(), getCustomCode()]);
+
   return (
     <>
-      <Hero />
-      <CategoryTiles />
-      <BestSellers />
-      <TrustStrip />
-      <ReviewsTeaser />
-      <CommunityTeaser />
+      {/* Composed here (not in a shared layout) so Header sits directly
+          before Hero with nothing solid between them — that's what lets
+          Hero slide up underneath it for the transparent-over-hero look.
+          ValuePropBar moves to right after Hero instead of its usual spot
+          directly under the header, only on this page. The "header" custom
+          code block goes ABOVE Header here (rather than below it, like on
+          other pages) so it doesn't break that same adjacency. */}
+      <AnnouncementBar />
+      {customCode.header && <CustomHtml html={customCode.header} className="container-page py-2" />}
+      <Header siteTitle={settings.siteTitle} logoUrl={settings.logoUrl} />
+      <main className="flex-1">
+        <Hero />
+        <ValuePropBar />
+        {customCode.content && <CustomHtml html={customCode.content} className="container-page py-2" />}
+        <CategoryTiles />
+        <BestSellers />
+        <TrustStrip />
+        <ReviewsTeaser />
+        <CommunityTeaser />
+      </main>
     </>
   );
 }

@@ -120,8 +120,10 @@ CREATE TABLE order_items (
   INDEX (order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- One JSON blob per editable homepage section (hero slides, value props,
--- trust strip, community teaser) — edited from /admin/content.
+-- One JSON blob per editable block: hero slides, value props, trust strip,
+-- and community teaser (all from /admin/content); site settings — title,
+-- tagline, logo, favicon, footer (/admin/settings); and custom code for the
+-- header/content/footer (/admin/custom-code).
 CREATE TABLE content_blocks (
   block_key VARCHAR(64) PRIMARY KEY,
   data JSON NOT NULL,
@@ -168,8 +170,18 @@ Basic Auth login prompt.
 - **Orders** — list, detail, and status updates (paid/processing/shipped/refunded).
 - **Products** — add, edit, delete. Specs, badges, cross-sell, and compare-group are all editable.
 - **Categories** — add, edit, delete.
-- **Content** — hero slider slides (including a video or image URL per slide), the value-props bar,
+- **Payments** — connection status for Stripe (never the keys themselves — see below) and stubs for
+  other payment methods.
+- **Content** — hero slider slides (image, or a video/YouTube URL per slide), the value-props bar,
   the "as featured in" strip, and the community teaser — all edited as plain forms, live on save.
+- **Custom code** — raw HTML/CSS/JS you want injected into the header, top of the page content, or
+  footer, on every page (analytics snippets, a chat widget, etc.). This runs on your live site
+  exactly as pasted — only add code you trust, the same way you'd vet a WordPress or Shopify
+  "custom HTML" block.
+- **Settings** — site title, tagline, logo, favicon, footer description, and social links.
+
+The homepage header is transparent over the hero image/video until you scroll, then becomes solid
+and sticky (`src/components/storefront/Header.tsx`) — every other page's header is always solid.
 
 Gated by HTTP Basic Auth (`src/proxy.ts`) using `ADMIN_USER` / `ADMIN_PASSWORD` from your
 environment, and the same protection covers the `/api/admin/*` write endpoints, not just the pages.
@@ -185,18 +197,23 @@ or your identity provider before going live with a team of admins.
 ```
 src/
   app/
-    (storefront)/     Public site: home, /shop/[category], /product/[slug], /checkout/*
-    admin/            Dashboard, orders, products, categories, content — all under Basic Auth
+    (storefront)/
+      layout.tsx      Shared cart state + footer + cart drawer for every storefront route
+      page.tsx         Homepage — composes its own header/hero (see Header transparency above)
+      (shop)/          Route group: every other storefront page, with the normal solid header
+    admin/            Dashboard, orders, products, categories, payments, content, custom-code,
+                      settings — all under Basic Auth
     api/
       checkout/       Stripe Checkout session creation
       stripe/webhook/ Stripe webhook → writes to the orders table
-      admin/          Write endpoints for products/categories/content/order status (admin-only)
+      admin/          Write endpoints for products/categories/content/settings/etc (admin-only)
   components/
-    storefront/       Header, Footer, CartDrawer, HeroSlider, ProductCard, CompareTable, etc.
-    admin/            Sidebar, ProductForm, CategoryForm, ContentForm, OrderStatusForm, etc.
+    storefront/       Header, Footer, CartDrawer, HeroSlider, ProductCard, CompareTable, CustomHtml, etc.
+    admin/            Sidebar, ProductForm, CategoryForm, ContentForm, SettingsForm, CustomCodeForm, etc.
   data/               DB-backed data layer (falls back to placeholder data with no DB configured)
   config/brand.ts     Brand identity — start here when rebranding
   context/            Cart state (snapshotted per line item, persisted to localStorage)
   lib/db.ts           MySQL connection pool + self-migrating schema
   lib/stripe.ts       Server-side Stripe client
+  lib/youtube.ts      Detects YouTube URLs for the hero slider's background-video mode
 ```

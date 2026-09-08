@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { isDbConfigured, query } from "@/lib/db";
 import { brand } from "@/config/brand";
 
@@ -58,6 +59,28 @@ export const defaultCommunity: CommunityContent = {
   ],
 };
 
+export type SiteSettings = {
+  siteTitle: string;
+  tagline: string;
+  logoUrl: string;
+  faviconUrl: string;
+  footerDescription: string;
+  social: { instagram: string; youtube: string; facebook: string; tiktok: string };
+};
+
+export const defaultSettings: SiteSettings = {
+  siteTitle: brand.name,
+  tagline: brand.tagline,
+  logoUrl: "",
+  faviconUrl: "",
+  footerDescription: brand.tagline,
+  social: { ...brand.social },
+};
+
+export type CustomCodeContent = { header: string; content: string; footer: string };
+
+export const defaultCustomCode: CustomCodeContent = { header: "", content: "", footer: "" };
+
 type ContentRow = { data: unknown };
 
 async function getContent<T>(key: string, fallback: T): Promise<T> {
@@ -77,14 +100,27 @@ async function setContent(key: string, data: unknown): Promise<void> {
   );
 }
 
-export const getHeroContent = () => getContent<HeroContent>("hero", defaultHero);
+// Wrapped in React's cache() so multiple layouts/pages reading the same
+// block in one request (header + footer + page all want `settings`, say)
+// only hit the database once per request instead of once per caller.
+export const getHeroContent = cache(() => getContent<HeroContent>("hero", defaultHero));
 export const setHeroContent = (data: HeroContent) => setContent("hero", data);
 
-export const getValueProps = () => getContent<ValuePropsContent>("valueProps", defaultValueProps);
+export const getValueProps = cache(() => getContent<ValuePropsContent>("valueProps", defaultValueProps));
 export const setValueProps = (data: ValuePropsContent) => setContent("valueProps", data);
 
-export const getTrustContent = () => getContent<TrustContent>("trust", defaultTrust);
+export const getTrustContent = cache(() => getContent<TrustContent>("trust", defaultTrust));
 export const setTrustContent = (data: TrustContent) => setContent("trust", data);
 
-export const getCommunityContent = () => getContent<CommunityContent>("community", defaultCommunity);
+export const getCommunityContent = cache(() =>
+  getContent<CommunityContent>("community", defaultCommunity)
+);
 export const setCommunityContent = (data: CommunityContent) => setContent("community", data);
+
+export const getSettings = cache(() => getContent<SiteSettings>("settings", defaultSettings));
+export const setSettings = (data: SiteSettings) => setContent("settings", data);
+
+export const getCustomCode = cache(() =>
+  getContent<CustomCodeContent>("customCode", defaultCustomCode)
+);
+export const setCustomCode = (data: CustomCodeContent) => setContent("customCode", data);
