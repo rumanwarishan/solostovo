@@ -9,7 +9,7 @@ export function BestSellers() {
     <section className="border-t border-brand-line bg-brand-surface py-14">
       <div className="container-page">
         <h2 className="font-display text-2xl font-bold">Customer favorites</h2>
-        <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {items.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

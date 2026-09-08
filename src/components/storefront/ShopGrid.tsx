@@ -80,7 +80,7 @@ export function ShopGrid({
         </p>
       )}
 
-      <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {filtered.map((p) => (
           <div key={p.id}>
             <ProductCard product={p} />

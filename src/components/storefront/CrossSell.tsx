@@ -8,7 +8,7 @@ export function CrossSell({ ids }: { ids: string[] }) {
   return (
     <section className="mt-16 border-t border-brand-line pt-10">
       <h2 className="font-display text-xl font-bold">Complete your setup</h2>
-      <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
         {items.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}
