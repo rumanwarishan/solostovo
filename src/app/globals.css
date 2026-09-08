@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  /* Placeholder brand palette — swap these for your identity. */
+  --brand-ink: #1b1b18;
+  --brand-paper: #f7f6f2;
+  --brand-surface: #ffffff;
+  --brand-muted: #6b6a63;
+  --brand-line: #e4e2da;
+  --brand-primary: #2f5d50;
+  --brand-primary-dark: #1f453b;
+  --brand-primary-soft: #dfe9e5;
+  --brand-accent: #b5772f;
+  --brand-accent-soft: #f3e3cf;
+  --brand-danger: #a63a3a;
+
+  --background: var(--brand-paper);
+  --foreground: var(--brand-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-paper: var(--brand-paper);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-line: var(--brand-line);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-dark: var(--brand-primary-dark);
+  --color-brand-primary-soft: var(--brand-primary-soft);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-soft: var(--brand-accent-soft);
+  --color-brand-danger: var(--brand-danger);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand-ink: #f1efe7;
+    --brand-paper: #14150f;
+    --brand-surface: #1c1e16;
+    --brand-muted: #a4a296;
+    --brand-line: #33352a;
+    --brand-primary: #6fae9c;
+    --brand-primary-dark: #4d8474;
+    --brand-primary-soft: #223731;
+    --brand-accent: #e0a25c;
+    --brand-accent-soft: #3a2c1a;
+    --brand-danger: #e2837c;
+
+    --background: var(--brand-paper);
+    --foreground: var(--brand-ink);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.container-page {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
