@@ -5,6 +5,7 @@ import { useState } from "react";
 import type {
   HeroContent,
   AnnouncementContent,
+  AnnouncementMessage,
   ValuePropsContent,
   TrustContent,
   CommunityContent,
@@ -65,7 +66,7 @@ export function ContentForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hero,
-          announcements: { messages: announcements.filter((v) => v.trim() !== "") },
+          announcements: { messages: announcements.filter((v) => v.text.trim() !== "") },
           valueProps: { items: valueProps.filter((v) => v.trim() !== "") },
           trust: { names: trust.filter((v) => v.trim() !== "") },
           community: { posts: community.filter((p) => p.title.trim() !== "") },
@@ -186,15 +187,30 @@ export function ContentForm({
         <h2 className="font-display text-lg font-bold">Announcement bar</h2>
         <p className="mt-1 text-xs text-brand-ink/60">
           The scrolling strip at the very top of every page. Add more than one to make it a
-          carousel with prev/next arrows.
+          carousel with prev/next arrows. Leave the link blank for plain (non-clickable) text.
         </p>
         <div className="mt-3 flex flex-col gap-2">
           {announcements.map((msg, i) => (
             <div key={i} className="flex gap-2">
               <input
                 className={inputClass}
-                value={msg}
-                onChange={(e) => setAnnouncements(announcements.map((v, idx) => (idx === i ? e.target.value : v)))}
+                placeholder="Message"
+                value={msg.text}
+                onChange={(e) =>
+                  setAnnouncements(
+                    announcements.map((v, idx) => (idx === i ? { ...v, text: e.target.value } : v))
+                  )
+                }
+              />
+              <input
+                className={`${inputClass} max-w-[200px]`}
+                placeholder="Link (optional)"
+                value={msg.href ?? ""}
+                onChange={(e) =>
+                  setAnnouncements(
+                    announcements.map((v, idx) => (idx === i ? { ...v, href: e.target.value } : v))
+                  )
+                }
               />
               <button
                 type="button"
@@ -207,7 +223,7 @@ export function ContentForm({
           ))}
           <button
             type="button"
-            onClick={() => setAnnouncements([...announcements, ""])}
+            onClick={() => setAnnouncements([...announcements, { text: "", href: "" } as AnnouncementMessage])}
             className="self-start text-xs font-medium text-brand-primary hover:underline"
           >
             + Add message

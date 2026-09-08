@@ -24,6 +24,10 @@ export function SettingsForm({ initial }: { initial: SiteSettings }) {
     setForm((f) => ({ ...f, social: { ...f.social, [key]: value } }));
   }
 
+  function updateSection(key: keyof SiteSettings["sections"], value: boolean) {
+    setForm((f) => ({ ...f, sections: { ...f.sections, [key]: value } }));
+  }
+
   async function handleSave() {
     setSaving(true);
     setError(null);
@@ -103,6 +107,36 @@ export function SettingsForm({ initial }: { initial: SiteSettings }) {
             />
             Show footer
           </label>
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="font-display text-lg font-bold">Homepage sections</h2>
+        <p className="mt-1 text-xs text-brand-ink/60">
+          Show or hide individual sections without deleting their content.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {(
+            [
+              ["announcement", "Announcement bar"],
+              ["valueProps", "Value props strip"],
+              ["hero", "Hero slider"],
+              ["categories", "Shop by category"],
+              ["bestSellers", "Customer favorites"],
+              ["trust", "As featured in"],
+              ["reviews", "Reviews teaser"],
+              ["community", "From the community"],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.sections[key]}
+                onChange={(e) => updateSection(key, e.target.checked)}
+              />
+              {label}
+            </label>
+          ))}
         </div>
       </section>
 

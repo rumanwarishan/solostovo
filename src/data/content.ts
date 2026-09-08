@@ -16,7 +16,8 @@ export type HeroSlide = {
 };
 
 export type HeroContent = { slides: HeroSlide[] };
-export type AnnouncementContent = { messages: string[] };
+export type AnnouncementMessage = { text: string; href?: string };
+export type AnnouncementContent = { messages: AnnouncementMessage[] };
 export type ValuePropsContent = { items: string[] };
 export type TrustContent = { names: string[] };
 export type CommunityPost = { title: string; tag: string };
@@ -41,11 +42,20 @@ export const defaultHero: HeroContent = {
 
 export const defaultAnnouncements: AnnouncementContent = {
   messages: [
-    `Free shipping on orders over $${brand.freeShippingThreshold}`,
-    brand.trialLine,
-    brand.warrantyLine,
+    { text: `Free shipping on orders over $${brand.freeShippingThreshold}` },
+    { text: brand.trialLine },
+    { text: brand.warrantyLine },
   ],
 };
+
+/** Accepts old string-only entries from before links were supported. */
+export function normalizeAnnouncements(content: AnnouncementContent): AnnouncementContent {
+  return {
+    messages: (content.messages as unknown[]).map((m) =>
+      typeof m === "string" ? { text: m } : (m as AnnouncementMessage)
+    ),
+  };
+}
 
 export const defaultValueProps: ValuePropsContent = {
   items: [
@@ -68,6 +78,17 @@ export const defaultCommunity: CommunityContent = {
   ],
 };
 
+export type SectionVisibility = {
+  announcement: boolean;
+  valueProps: boolean;
+  hero: boolean;
+  categories: boolean;
+  bestSellers: boolean;
+  trust: boolean;
+  reviews: boolean;
+  community: boolean;
+};
+
 export type SiteSettings = {
   siteTitle: string;
   tagline: string;
@@ -77,6 +98,18 @@ export type SiteSettings = {
   social: { instagram: string; youtube: string; facebook: string; tiktok: string };
   showHeader: boolean;
   showFooter: boolean;
+  sections: SectionVisibility;
+};
+
+export const defaultSectionVisibility: SectionVisibility = {
+  announcement: true,
+  valueProps: true,
+  hero: true,
+  categories: true,
+  bestSellers: true,
+  trust: true,
+  reviews: true,
+  community: true,
 };
 
 export const defaultSettings: SiteSettings = {
@@ -88,7 +121,13 @@ export const defaultSettings: SiteSettings = {
   social: { ...brand.social },
   showHeader: true,
   showFooter: true,
+  sections: { ...defaultSectionVisibility },
 };
+
+/** Fills in `sections` for settings saved before this field existed. */
+export function normalizeSettings(settings: SiteSettings): SiteSettings {
+  return { ...settings, sections: { ...defaultSectionVisibility, ...settings.sections } };
+}
 
 export type CustomCodeContent = { header: string; content: string; footer: string };
 
@@ -119,8 +158,8 @@ async function setContent(key: string, data: unknown): Promise<void> {
 export const getHeroContent = cache(() => getContent<HeroContent>("hero", defaultHero));
 export const setHeroContent = (data: HeroContent) => setContent("hero", data);
 
-export const getAnnouncements = cache(() =>
-  getContent<AnnouncementContent>("announcements", defaultAnnouncements)
+export const getAnnouncements = cache(async () =>
+  normalizeAnnouncements(await getContent<AnnouncementContent>("announcements", defaultAnnouncements))
 );
 export const setAnnouncements = (data: AnnouncementContent) => setContent("announcements", data);
 
@@ -135,7 +174,9 @@ export const getCommunityContent = cache(() =>
 );
 export const setCommunityContent = (data: CommunityContent) => setContent("community", data);
 
-export const getSettings = cache(() => getContent<SiteSettings>("settings", defaultSettings));
+export const getSettings = cache(async () =>
+  normalizeSettings(await getContent<SiteSettings>("settings", defaultSettings))
+);
 export const setSettings = (data: SiteSettings) => setContent("settings", data);
 
 export const getCustomCode = cache(() =>

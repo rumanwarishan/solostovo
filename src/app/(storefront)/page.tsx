@@ -29,21 +29,24 @@ export default async function Home() {
           Hero slide up underneath it for the transparent-over-hero look.
           ValuePropBar moves to right after Hero instead of its usual spot
           directly under the header, only on this page. */}
+      {settings.sections.announcement && <AnnouncementBar />}
       {settings.showHeader && (
-        <>
-          <AnnouncementBar />
-          <Header siteTitle={settings.siteTitle} logoUrl={settings.logoUrl} categories={categories} />
-        </>
+        <Header
+          siteTitle={settings.siteTitle}
+          logoUrl={settings.logoUrl}
+          categories={categories}
+          enableTransparent={settings.sections.hero}
+        />
       )}
       <main className="flex-1">
-        <Hero overlapHeader={settings.showHeader} />
-        {settings.showHeader && <ValuePropBar />}
+        {settings.sections.hero && <Hero overlapHeader={settings.showHeader} />}
+        {settings.sections.valueProps && <ValuePropBar />}
         {customCode.content && <CustomHtml html={customCode.content} className="container-page py-2" />}
-        <CategoryTiles />
-        <BestSellers />
-        <TrustStrip />
-        <ReviewsTeaser />
-        <CommunityTeaser />
+        {settings.sections.categories && <CategoryTiles />}
+        {settings.sections.bestSellers && <BestSellers />}
+        {settings.sections.trust && <TrustStrip />}
+        {settings.sections.reviews && <ReviewsTeaser />}
+        {settings.sections.community && <CommunityTeaser />}
       </main>
     </>
   );

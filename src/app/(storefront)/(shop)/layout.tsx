@@ -14,13 +14,16 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
 
   return (
     <>
+      {settings.sections.announcement && <AnnouncementBar />}
       {settings.showHeader && (
-        <>
-          <AnnouncementBar />
-          <Header siteTitle={settings.siteTitle} logoUrl={settings.logoUrl} categories={categories} />
-          <ValuePropBar />
-        </>
+        <Header
+          siteTitle={settings.siteTitle}
+          logoUrl={settings.logoUrl}
+          categories={categories}
+          enableTransparent={settings.sections.hero}
+        />
       )}
+      {settings.sections.valueProps && <ValuePropBar />}
       <main className="flex-1">
         {customCode.content && <CustomHtml html={customCode.content} className="container-page py-2" />}
         {children}

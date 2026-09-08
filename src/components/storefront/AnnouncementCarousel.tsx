@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import type { AnnouncementMessage } from "@/data/content";
 
 const AUTOPLAY_MS = 5000;
 
-export function AnnouncementCarousel({ messages }: { messages: string[] }) {
+export function AnnouncementCarousel({ messages }: { messages: AnnouncementMessage[] }) {
   const [index, setIndex] = useState(0);
   const multi = messages.length > 1;
 
@@ -16,6 +18,7 @@ export function AnnouncementCarousel({ messages }: { messages: string[] }) {
   }, [multi, messages.length]);
 
   if (messages.length === 0) return null;
+  const current = messages[index];
 
   return (
     <div className="flex h-9 items-center justify-center gap-3 bg-brand-ink px-3 text-xs text-brand-paper">
@@ -28,9 +31,13 @@ export function AnnouncementCarousel({ messages }: { messages: string[] }) {
           ‹
         </button>
       )}
-      <span className="text-center underline decoration-brand-paper/40 underline-offset-2">
-        {messages[index]}
-      </span>
+      {current.href ? (
+        <Link href={current.href} className="text-center underline decoration-brand-paper/40 underline-offset-2 hover:text-brand-paper">
+          {current.text}
+        </Link>
+      ) : (
+        <span className="text-center">{current.text}</span>
+      )}
       {multi && (
         <button
           aria-label="Next message"

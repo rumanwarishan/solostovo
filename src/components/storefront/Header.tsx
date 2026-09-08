@@ -15,15 +15,19 @@ export function Header({
   siteTitle,
   logoUrl,
   categories = [],
+  enableTransparent = true,
 }: {
   siteTitle?: string;
   logoUrl?: string;
   categories?: Category[];
+  /** Float transparent over the hero before scroll — only makes sense when
+   * the homepage actually has a hero directly underneath. */
+  enableTransparent?: boolean;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" && enableTransparent;
 
   // Only the homepage has a hero for the header to float over — everywhere
   // else it's always in its normal solid state.
@@ -66,9 +70,9 @@ export function Header({
   return (
     <>
       <header className={`sticky top-0 z-40 transition-colors duration-300 ${chrome}`}>
-        <div className="container-page grid h-16 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-          {/* Left: mobile hamburger + search; desktop gets the need-based nav */}
-          <div className="flex min-w-0 items-center gap-1 md:gap-6">
+        <div className="container-page flex h-16 items-center justify-between gap-4">
+          {/* Left: mobile hamburger + logo */}
+          <div className="flex min-w-0 flex-shrink-0 items-center gap-3">
             <button
               className={`inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-sm border md:hidden ${menuButtonBorder} ${textStrong}`}
               aria-label="Open menu"
@@ -79,65 +83,61 @@ export function Header({
                 <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" strokeWidth="1.5" />
               </svg>
             </button>
+            <Link href="/" className={`flex items-center gap-2 font-display text-xl font-bold tracking-tight ${textStrong}`}>
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt={title} className="h-10 w-auto sm:h-11" />
+              ) : (
+                title
+              )}
+            </Link>
+          </div>
+
+          {/* Center: primary + category nav, desktop only */}
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex" aria-label="Primary">
+            {needNav.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`whitespace-nowrap text-sm transition-colors hover:text-brand-primary ${textMuted}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <span className={`h-4 w-px flex-shrink-0 ${transparent ? "bg-white/30" : "bg-brand-line"}`} aria-hidden="true" />
+            {familyNav.map((group) => (
+              <div key={group.href} className="group relative">
+                <Link
+                  href={group.href}
+                  className={`whitespace-nowrap text-sm transition-colors hover:text-brand-primary ${textMuted}`}
+                >
+                  {group.label}
+                </Link>
+                <div className="invisible absolute left-1/2 top-full z-10 -translate-x-1/2 pt-3 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100">
+                  <div className="min-w-[180px] rounded-sm border border-brand-line bg-brand-surface py-2 shadow-lg">
+                    {group.links.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="block whitespace-nowrap px-4 py-1.5 text-sm text-brand-ink/80 hover:bg-brand-bg hover:text-brand-primary"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </nav>
+
+          {/* Right: search, account, cart */}
+          <div className="flex flex-shrink-0 items-center gap-1">
             <button className={`inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-sm md:hidden ${iconColor}`} aria-label="Search">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                 <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
                 <path d="M12.2 12.2 16 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
-
-            {/* Split across both sides of the centered logo so neither side
-                overflows and pushes the logo off-center. */}
-            <nav className="hidden min-w-0 items-center gap-5 md:flex" aria-label="Primary">
-              {needNav.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`whitespace-nowrap text-sm transition-colors hover:text-brand-primary ${textMuted}`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          {/* Center: logo, always dead-center regardless of side content */}
-          <Link href="/" className={`flex items-center justify-self-center gap-2 font-display text-xl font-bold tracking-tight ${textStrong}`}>
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={title} className="h-8 w-auto" />
-            ) : (
-              title
-            )}
-          </Link>
-
-          {/* Right: family nav (desktop) + search, account, cart */}
-          <div className="flex min-w-0 items-center justify-end gap-1 md:gap-5">
-            <nav className="hidden min-w-0 items-center gap-5 lg:flex" aria-label="Shop by category">
-              {familyNav.map((group) => (
-                <div key={group.href} className="group relative">
-                  <Link
-                    href={group.href}
-                    className={`whitespace-nowrap text-sm transition-colors hover:text-brand-primary ${textMuted}`}
-                  >
-                    {group.label}
-                  </Link>
-                  <div className="invisible absolute right-0 top-full z-10 pt-3 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100">
-                    <div className="min-w-[180px] rounded-sm border border-brand-line bg-brand-surface py-2 shadow-lg">
-                      {group.links.map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          className="block whitespace-nowrap px-4 py-1.5 text-sm text-brand-ink/80 hover:bg-brand-bg hover:text-brand-primary"
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </nav>
             <button className={`hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-sm md:inline-flex ${iconColor}`} aria-label="Search">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                 <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
