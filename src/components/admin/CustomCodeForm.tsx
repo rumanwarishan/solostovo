@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { CustomCodeContent } from "@/data/content";
+import type { CustomCodeContent, CustomHtmlSection } from "@/data/content";
 
 const textareaClass =
   "w-full rounded-sm border border-brand-line bg-brand-surface px-3 py-2 font-mono text-xs outline-none focus:border-brand-primary";
@@ -76,18 +76,62 @@ export function CustomCodeForm({ initial }: { initial: CustomCodeContent }) {
 
       <div className="mb-6">
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-brand-ink/50">
-          Content — a visible block at the top of the page content
+          Content sections — visible blocks at the top of the page content
         </label>
         <p className="mb-1.5 text-xs text-brand-ink/50">
-          For a visible banner or notice. Appears on every page, right below the header.
+          For visible banners or notices. Each one appears on every page, right below the header, in
+          the order listed here.
         </p>
-        <textarea
-          rows={5}
-          spellCheck={false}
-          className={textareaClass}
-          value={form.content}
-          onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-        />
+        <div className="flex flex-col gap-4">
+          {form.sections.map((section, i) => (
+            <div key={section.id} className="rounded-sm border border-brand-line bg-brand-surface p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <input
+                  placeholder={`Section ${i + 1} name (for your reference only)`}
+                  className="w-full rounded-sm border border-brand-line bg-white px-2 py-1 text-sm outline-none focus:border-brand-primary"
+                  value={section.label}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      sections: f.sections.map((s, idx) => (idx === i ? { ...s, label: e.target.value } : s)),
+                    }))
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, sections: f.sections.filter((_, idx) => idx !== i) }))}
+                  className="whitespace-nowrap px-2 text-xs text-brand-ink/40 hover:text-brand-danger"
+                >
+                  Remove
+                </button>
+              </div>
+              <textarea
+                rows={5}
+                spellCheck={false}
+                className={textareaClass}
+                value={section.html}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    sections: f.sections.map((s, idx) => (idx === i ? { ...s, html: e.target.value } : s)),
+                  }))
+                }
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setForm((f) => ({
+                ...f,
+                sections: [...f.sections, { id: crypto.randomUUID(), label: "", html: "" } as CustomHtmlSection],
+              }))
+            }
+            className="self-start text-xs font-medium text-brand-primary hover:underline"
+          >
+            + Add HTML section
+          </button>
+        </div>
       </div>
 
       <div className="mb-6">

@@ -41,9 +41,11 @@ export default async function Home() {
       <main className="flex-1">
         {settings.sections.hero && <Hero overlapHeader={settings.showHeader} />}
         {settings.sections.valueProps && <ValuePropBar />}
-        {customCode.content && <CustomHtml html={customCode.content} className="container-page py-2" />}
-        {settings.sections.categories && <CategoryTiles />}
+        {customCode.sections.map((s) => (
+          <CustomHtml key={s.id} html={s.html} className="container-page py-2" />
+        ))}
         {settings.sections.bestSellers && <BestSellers />}
+        {settings.sections.categories && <CategoryTiles />}
         {settings.sections.trust && <TrustStrip />}
         {settings.sections.reviews && <ReviewsTeaser />}
         {settings.sections.community && <CommunityTeaser />}

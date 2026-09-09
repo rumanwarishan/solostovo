@@ -25,7 +25,9 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
       )}
       {settings.sections.valueProps && <ValuePropBar />}
       <main className="flex-1">
-        {customCode.content && <CustomHtml html={customCode.content} className="container-page py-2" />}
+        {customCode.sections.map((s) => (
+          <CustomHtml key={s.id} html={s.html} className="container-page py-2" />
+        ))}
         {children}
       </main>
     </>

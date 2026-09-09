@@ -81,12 +81,19 @@ export async function getCategory(slug: string): Promise<Category | undefined> {
 }
 
 export async function createCategory(input: Category): Promise<void> {
-  await query("INSERT INTO categories (slug, name, description, image_url) VALUES (?, ?, ?, ?)", [
-    input.slug,
-    input.name,
-    input.description,
-    input.imageUrl ?? null,
-  ]);
+  const countRows = await query<{ count: number }[]>("SELECT COUNT(*) as count FROM categories");
+  const sortOrder = Number(countRows[0]?.count ?? 0);
+  await query(
+    "INSERT INTO categories (slug, name, description, image_url, sort_order) VALUES (?, ?, ?, ?, ?)",
+    [input.slug, input.name, input.description, input.imageUrl ?? null, sortOrder]
+  );
+}
+
+/** Persists a new display order — `slugs` is the full list, in the order they should appear. */
+export async function reorderCategories(slugs: string[]): Promise<void> {
+  await Promise.all(
+    slugs.map((slug, i) => query("UPDATE categories SET sort_order = ? WHERE slug = ?", [i, slug]))
+  );
 }
 
 export async function updateCategory(slug: string, input: Omit<Category, "slug">): Promise<void> {

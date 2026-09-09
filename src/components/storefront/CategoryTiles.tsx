@@ -16,7 +16,7 @@ export async function CategoryTiles() {
   return (
     <section className="container-page py-14">
       <h2 className="font-display text-2xl font-bold">Shop by category</h2>
-      <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
         {categories.map((c) =>
           c.imageUrl ? (
             <Link key={c.slug} href={`/shop/${c.slug}`} className="group">

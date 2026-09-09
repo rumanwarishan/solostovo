@@ -129,9 +129,23 @@ export function normalizeSettings(settings: SiteSettings): SiteSettings {
   return { ...settings, sections: { ...defaultSectionVisibility, ...settings.sections } };
 }
 
-export type CustomCodeContent = { header: string; content: string; footer: string };
+export type CustomHtmlSection = { id: string; label: string; html: string };
+export type CustomCodeContent = { header: string; sections: CustomHtmlSection[]; footer: string };
 
-export const defaultCustomCode: CustomCodeContent = { header: "", content: "", footer: "" };
+export const defaultCustomCode: CustomCodeContent = { header: "", sections: [], footer: "" };
+
+/** Migrates the old single `content` string field into the new repeatable `sections` list. */
+export function normalizeCustomCode(raw: unknown): CustomCodeContent {
+  const data = (raw ?? {}) as Partial<CustomCodeContent> & { content?: string };
+  if (Array.isArray(data.sections)) {
+    return { header: data.header ?? "", sections: data.sections, footer: data.footer ?? "" };
+  }
+  const sections: CustomHtmlSection[] =
+    typeof data.content === "string" && data.content.trim() !== ""
+      ? [{ id: "legacy", label: "", html: data.content }]
+      : [];
+  return { header: data.header ?? "", sections, footer: data.footer ?? "" };
+}
 
 type ContentRow = { data: unknown };
 
@@ -179,7 +193,7 @@ export const getSettings = cache(async () =>
 );
 export const setSettings = (data: SiteSettings) => setContent("settings", data);
 
-export const getCustomCode = cache(() =>
-  getContent<CustomCodeContent>("customCode", defaultCustomCode)
+export const getCustomCode = cache(async () =>
+  normalizeCustomCode(await getContent<unknown>("customCode", defaultCustomCode))
 );
 export const setCustomCode = (data: CustomCodeContent) => setContent("customCode", data);
