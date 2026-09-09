@@ -50,3 +50,35 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+@keyframes preloader-trace {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+@keyframes preloader-flicker {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.06) translateY(-1px);
+  }
+}
+
+.preloader-trace {
+  animation: preloader-trace 1.6s linear infinite;
+}
+
+.preloader-flame {
+  transform-origin: 50% 60%;
+  animation: preloader-flicker 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader-trace,
+  .preloader-flame {
+    animation: none;
+  }
+}
