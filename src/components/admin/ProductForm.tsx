@@ -21,8 +21,7 @@ export type ProductFormPayload = {
   description: string;
   specs: Record<string, string>;
   imageTone: string;
-  imageUrl: string;
-  imageUrl2: string;
+  images: string[];
   crossSell: string[];
   compareGroup: string;
   stock: number;
@@ -51,8 +50,7 @@ function toFormState(product?: Product) {
     description: product?.description ?? "",
     specs: product?.specs ?? {},
     imageTone: product?.imageTone ?? "from-[#3a4a3f] to-[#1f2b23]",
-    imageUrl: product?.imageUrl ?? "",
-    imageUrl2: product?.imageUrl2 ?? "",
+    images: product?.images?.length ? product.images : [""],
     crossSell: product?.crossSell ?? [],
     compareGroup: product?.compareGroup ?? "",
     stock: product?.stock ?? 0,
@@ -95,6 +93,7 @@ export function ProductForm({
     const payload: ProductFormPayload = {
       ...form,
       specs,
+      images: form.images.filter((url) => url.trim() !== ""),
       crossSell: form.crossSell,
       compareAtPrice: form.compareAtPrice || undefined,
     };
@@ -347,19 +346,47 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <ImageUploadField
-          label="Photo"
-          value={form.imageUrl}
-          onChange={(url) => update("imageUrl", url)}
-          hint="Shown on cards and the product page."
-        />
-        <ImageUploadField
-          label="Hover / second photo (optional)"
-          value={form.imageUrl2}
-          onChange={(url) => update("imageUrl2", url)}
-          hint="Swaps in when a shopper hovers the card."
-        />
+      <div className="mt-4">
+        <label className={labelClass}>Photos</label>
+        <p className="mb-2 text-xs text-brand-ink/60">
+          The first photo is used on cards and as the main product-page image; the second swaps in
+          when a shopper hovers the card. Add as many more as you like for the gallery.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {form.images.map((url, i) => (
+            <div key={i} className="flex items-end gap-2">
+              <div className="flex-1">
+                <ImageUploadField
+                  label={i === 0 ? "Photo 1 (primary)" : i === 1 ? "Photo 2 (hover)" : `Photo ${i + 1}`}
+                  value={url}
+                  onChange={(next) =>
+                    update(
+                      "images",
+                      form.images.map((v, idx) => (idx === i ? next : v))
+                    )
+                  }
+                />
+              </div>
+              {form.images.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => update("images", form.images.filter((_, idx) => idx !== i))}
+                  className="mb-1 px-2 py-2 text-brand-ink/40 hover:text-brand-danger"
+                  aria-label="Remove photo"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => update("images", [...form.images, ""])}
+          className="mt-2 text-xs font-medium text-brand-primary hover:underline"
+        >
+          + Add another photo
+        </button>
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">

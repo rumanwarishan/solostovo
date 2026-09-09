@@ -1,4 +1,5 @@
 import mysql, { type Pool } from "mysql2/promise";
+import { generateId, hashPassword } from "./auth";
 
 let pool: Pool | null = null;
 let schemaReady: Promise<void> | null = null;
@@ -125,6 +126,42 @@ async function migrate(): Promise<void> {
   await db.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL`);
   await db.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url_2 VARCHAR(500) NULL`);
   await db.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL`);
+  await db.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSON NULL`);
+
+  // Admin accounts (replaces the single-credential Basic Auth login once a
+  // database is connected) and their login sessions.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id VARCHAR(36) PRIMARY KEY,
+      username VARCHAR(255) NOT NULL UNIQUE,
+      password_hash VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS admin_sessions (
+      token VARCHAR(64) PRIMARY KEY,
+      user_id VARCHAR(36) NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES admin_users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  // First-run bootstrap: seed one admin account from the env-var
+  // credentials so a fresh database doesn't lock you out. Once this row
+  // exists, ADMIN_USER/ADMIN_PASSWORD are no longer read for login —
+  // manage accounts from Admin → Users instead.
+  const [countRows] = await db.query(`SELECT COUNT(*) as count FROM admin_users`);
+  const userCount = (countRows as { count: number }[])[0].count;
+  if (userCount === 0 && process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
+    await db.query(`INSERT INTO admin_users (id, username, password_hash) VALUES (?, ?, ?)`, [
+      generateId(),
+      process.env.ADMIN_USER,
+      hashPassword(process.env.ADMIN_PASSWORD),
+    ]);
+  }
 }
 
 /** Ensures schema exists, memoized so it only runs once per server process. */

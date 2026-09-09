@@ -7,11 +7,11 @@
  * name, palette, and copy in.
  */
 export const brand = {
-  name: "Acme Outdoor", // TODO: replace with your real brand name
-  shortName: "Acme",
+  name: "Solostovo",
+  shortName: "Solostovo",
   tagline: "Gather around the fire.", // TODO: replace with your tagline
-  domain: "acmeoutdoor.example",
-  supportEmail: "help@acmeoutdoor.example",
+  domain: "solostovo.example",
+  supportEmail: "help@solostovo.example",
   freeShippingThreshold: 199,
   warrantyLine: "Lifetime warranty on stainless steel",
   trialLine: "60-day risk-free trial",

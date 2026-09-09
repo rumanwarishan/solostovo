@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { brand } from "@/config/brand";
 
 const icons: Record<string, React.ReactNode> = {
@@ -36,6 +36,13 @@ const icons: Record<string, React.ReactNode> = {
       strokeLinejoin="round"
     />
   ),
+  users: (
+    <path
+      d="M7 9.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.5 8c0-3 2.5-5 5.5-5s5.5 2 5.5 5M13.5 4a3 3 0 0 1 0 6M15 8.5c2 .4 3.5 1.9 3.5 4"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+  ),
 };
 
 const groups = [
@@ -55,12 +62,20 @@ const groups = [
       { href: "/admin/content", label: "Content", icon: "content" },
       { href: "/admin/custom-code", label: "Custom code", icon: "code" },
       { href: "/admin/settings", label: "Settings", icon: "settings" },
+      { href: "/admin/users", label: "Admin accounts", icon: "users" },
     ],
   },
 ] as const;
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    router.replace("/admin/login");
+    router.refresh();
+  }
 
   return (
     <aside className="flex w-60 flex-shrink-0 flex-col border-r border-white/10 bg-[#14150f] text-[#e7e6de]">
@@ -103,6 +118,13 @@ export function Sidebar() {
         <Link href="/" className="block rounded-sm px-3 py-2 text-xs text-white/40 hover:text-white/70">
           ← Back to storefront
         </Link>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="block w-full rounded-sm px-3 py-2 text-left text-xs text-white/40 hover:text-white/70"
+        >
+          Sign out
+        </button>
       </div>
     </aside>
   );

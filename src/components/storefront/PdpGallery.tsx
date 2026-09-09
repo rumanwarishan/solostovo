@@ -5,7 +5,7 @@ import type { Product } from "@/data/products";
 import { PlaceholderImage } from "./PlaceholderImage";
 
 export function PdpGallery({ product }: { product: Product }) {
-  const images = [product.imageUrl, product.imageUrl2].filter((src): src is string => Boolean(src));
+  const images = (product.images ?? []).filter(Boolean);
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
