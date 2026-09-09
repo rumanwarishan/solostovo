@@ -4,19 +4,22 @@ import {
   getValueProps,
   getTrustContent,
   getCommunityContent,
+  getSettings,
 } from "@/data/content";
 import { ContentForm } from "@/components/admin/ContentForm";
+import { SectionOrderEditor } from "@/components/admin/SectionOrderEditor";
 import { isDbConfigured } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminContentPage() {
-  const [hero, announcements, valueProps, trust, community] = await Promise.all([
+  const [hero, announcements, valueProps, trust, community, settings] = await Promise.all([
     getHeroContent(),
     getAnnouncements(),
     getValueProps(),
     getTrustContent(),
     getCommunityContent(),
+    getSettings(),
   ]);
   const dbConfigured = isDbConfigured();
 
@@ -32,7 +35,11 @@ export default async function AdminContentPage() {
         </p>
       )}
 
-      <div className="mt-6">
+      <div className="mt-6 max-w-3xl">
+        <SectionOrderEditor initialOrder={settings.sectionOrder} />
+      </div>
+
+      <div className="mt-2">
         <ContentForm
           initialHero={hero}
           initialAnnouncements={announcements}

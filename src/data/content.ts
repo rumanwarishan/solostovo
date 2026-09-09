@@ -1,6 +1,10 @@
 import { cache } from "react";
 import { isDbConfigured, query } from "@/lib/db";
 import { brand } from "@/config/brand";
+import { type SectionKey, defaultSectionOrder } from "@/config/sections";
+
+export type { SectionKey };
+export { defaultSectionOrder };
 
 export type HeroSlide = {
   heading: string;
@@ -99,6 +103,7 @@ export type SiteSettings = {
   showHeader: boolean;
   showFooter: boolean;
   sections: SectionVisibility;
+  sectionOrder: SectionKey[];
 };
 
 export const defaultSectionVisibility: SectionVisibility = {
@@ -122,11 +127,23 @@ export const defaultSettings: SiteSettings = {
   showHeader: true,
   showFooter: true,
   sections: { ...defaultSectionVisibility },
+  sectionOrder: [...defaultSectionOrder],
 };
 
-/** Fills in `sections` for settings saved before this field existed. */
+/** Fills in `sections`/`sectionOrder` for settings saved before those fields existed, and folds
+ * in any section key added since (e.g. by an app update) that an older saved order predates. */
 export function normalizeSettings(settings: SiteSettings): SiteSettings {
-  return { ...settings, sections: { ...defaultSectionVisibility, ...settings.sections } };
+  const saved = Array.isArray(settings.sectionOrder) ? settings.sectionOrder : [];
+  const known = new Set(defaultSectionOrder);
+  const order = [
+    ...saved.filter((key): key is SectionKey => known.has(key)),
+    ...defaultSectionOrder.filter((key) => !saved.includes(key)),
+  ];
+  return {
+    ...settings,
+    sections: { ...defaultSectionVisibility, ...settings.sections },
+    sectionOrder: order,
+  };
 }
 
 export type CustomHtmlSection = { id: string; label: string; html: string };
@@ -192,6 +209,12 @@ export const getSettings = cache(async () =>
   normalizeSettings(await getContent<SiteSettings>("settings", defaultSettings))
 );
 export const setSettings = (data: SiteSettings) => setContent("settings", data);
+
+/** Updates just the homepage section order, leaving every other setting untouched. */
+export async function setSectionOrder(order: SectionKey[]): Promise<void> {
+  const current = normalizeSettings(await getContent<SiteSettings>("settings", defaultSettings));
+  await setContent("settings", { ...current, sectionOrder: order });
+}
 
 export const getCustomCode = cache(async () =>
   normalizeCustomCode(await getContent<unknown>("customCode", defaultCustomCode))
