@@ -149,6 +149,20 @@ async function migrate(): Promise<void> {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
+  // Payment provider credentials, entered from Admin → Payments instead of
+  // hosting env vars. Secret fields are encrypted before they land here —
+  // see src/lib/secrets.ts. A single fixed-id row since there's one store.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS payment_credentials (
+      id TINYINT PRIMARY KEY,
+      stripe_secret_key TEXT NULL,
+      stripe_webhook_secret TEXT NULL,
+      paypal_client_id VARCHAR(255) NULL,
+      paypal_client_secret TEXT NULL,
+      paypal_mode VARCHAR(16) NOT NULL DEFAULT 'sandbox'
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
   // First-run bootstrap: seed one admin account from the env-var
   // credentials so a fresh database doesn't lock you out. Once this row
   // exists, ADMIN_USER/ADMIN_PASSWORD are no longer read for login —

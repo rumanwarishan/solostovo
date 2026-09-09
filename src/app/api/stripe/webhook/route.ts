@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, getStripeWebhookSecret } from "@/lib/stripe";
 import { createOrder, type Order } from "@/data/orders";
 
 /**
  * Receives Stripe webhook events. In dev, forward events to this route with:
  *   stripe listen --forward-to localhost:3000/api/stripe/webhook
  * In production, add this URL as an endpoint in the Stripe dashboard and
- * copy its signing secret into STRIPE_WEBHOOK_SECRET.
+ * copy its signing secret in from Admin → Payments (or STRIPE_WEBHOOK_SECRET).
  */
 export async function POST(req: NextRequest) {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = await getStripeWebhookSecret();
   if (!webhookSecret) {
     return NextResponse.json({ error: "Webhook not configured." }, { status: 501 });
   }
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   let stripe;
   try {
-    stripe = getStripe();
+    stripe = await getStripe();
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Stripe is not configured." },

@@ -7,7 +7,7 @@ type CheckoutLine = { productId: string; quantity: number };
 export async function POST(req: NextRequest) {
   let stripe;
   try {
-    stripe = getStripe();
+    stripe = await getStripe();
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Stripe is not configured." },
