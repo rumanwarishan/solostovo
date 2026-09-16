@@ -20,12 +20,10 @@ export async function CategoryTiles() {
         {categories.map((c) =>
           c.imageUrl ? (
             <Link key={c.slug} href={`/shop/${c.slug}`} className="group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={c.imageUrl}
-                alt={c.name}
-                className="aspect-[4/3] w-full rounded-sm object-cover"
-              />
+              <div className="aspect-[4/3] w-full overflow-hidden rounded-sm bg-brand-paper p-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.imageUrl} alt={c.name} className="h-full w-full object-contain" />
+              </div>
               <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
                 {c.name}
               </span>

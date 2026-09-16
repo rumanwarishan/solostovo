@@ -99,6 +99,7 @@ export type SiteSettings = {
   logoUrl: string;
   faviconUrl: string;
   footerDescription: string;
+  footerBackgroundUrl: string;
   social: { instagram: string; youtube: string; facebook: string; tiktok: string };
   showHeader: boolean;
   showFooter: boolean;
@@ -123,6 +124,7 @@ export const defaultSettings: SiteSettings = {
   logoUrl: "",
   faviconUrl: "",
   footerDescription: brand.tagline,
+  footerBackgroundUrl: "",
   social: { ...brand.social },
   showHeader: true,
   showFooter: true,

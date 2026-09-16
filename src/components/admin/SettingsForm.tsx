@@ -179,6 +179,12 @@ export function SettingsForm({ initial }: { initial: SiteSettings }) {
               onChange={(e) => update("footerDescription", e.target.value)}
             />
           </div>
+          <ImageUploadField
+            label="Footer background image"
+            value={form.footerBackgroundUrl}
+            onChange={(url) => update("footerBackgroundUrl", url)}
+            hint="A dark, wide photo works best — it's shown with a 20% black overlay behind the footer text. Leave blank for a plain dark background."
+          />
           <div className="grid gap-4 sm:grid-cols-2">
             {(["instagram", "youtube", "facebook", "tiktok"] as const).map((key) => (
               <div key={key}>
