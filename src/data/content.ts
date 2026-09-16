@@ -113,7 +113,7 @@ export const defaultSectionVisibility: SectionVisibility = {
   categories: true,
   bestSellers: true,
   trust: true,
-  reviews: true,
+  reviews: false,
   community: true,
 };
 

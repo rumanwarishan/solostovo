@@ -67,7 +67,34 @@ export function SettingsForm({ initial }: { initial: SiteSettings }) {
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelClass}>Site title</label>
-            <input className={inputClass} value={form.siteTitle} onChange={(e) => update("siteTitle", e.target.value)} />
+            <div className="flex gap-2">
+              <input
+                className={inputClass}
+                value={form.siteTitle}
+                onChange={(e) => update("siteTitle", e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => update("siteTitle", `${form.siteTitle}®`)}
+                title="Insert ® at the end"
+                className="flex-shrink-0 rounded-sm border border-brand-line px-3 text-sm hover:border-brand-primary"
+              >
+                ®
+              </button>
+              <button
+                type="button"
+                onClick={() => update("siteTitle", `${form.siteTitle}™`)}
+                title="Insert ™ at the end"
+                className="flex-shrink-0 rounded-sm border border-brand-line px-3 text-sm hover:border-brand-primary"
+              >
+                ™
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-brand-ink/50">
+              It&apos;s a plain text field, so ® / ™ just type or paste in normally — the buttons
+              above are a shortcut. It shows up everywhere your site name does: the header, footer,
+              and browser tab.
+            </p>
           </div>
           <div>
             <label className={labelClass}>Tagline</label>

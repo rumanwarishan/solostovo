@@ -24,7 +24,7 @@ export async function CategoryTiles() {
               <img
                 src={c.imageUrl}
                 alt={c.name}
-                className="aspect-square w-full rounded-sm object-cover"
+                className="aspect-[4/3] w-full rounded-sm object-cover"
               />
               <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
                 {c.name}
@@ -35,7 +35,7 @@ export async function CategoryTiles() {
               <PlaceholderImage
                 tone={tones[c.slug] ?? fallbackTone}
                 label={c.name}
-                className="aspect-square w-full"
+                className="aspect-[4/3] w-full"
               />
               <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
                 {c.name}
