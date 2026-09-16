@@ -7,13 +7,13 @@ import { NewsletterForm } from "./NewsletterForm";
 function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/50">{title}</h3>
-      <ul className="flex flex-col gap-2">
+      <h3 className="mb-4 text-[15px] font-bold">{title}</h3>
+      <ul className="flex flex-col gap-[9px]">
         {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
-              className="text-sm text-white/85 underline decoration-white/30 underline-offset-2 hover:text-white hover:decoration-white/60"
+              className="text-sm text-white underline decoration-white/40 underline-offset-2 hover:opacity-75"
             >
               {l.label}
             </Link>
@@ -29,66 +29,85 @@ export async function Footer() {
   const siteTitle = settings.siteTitle || brand.shortName;
   const description = settings.footerDescription || brand.tagline;
   const social = settings.social;
+  const socialLinks = (["instagram", "youtube", "facebook", "tiktok"] as const).filter((k) => social[k]);
 
   return (
-    <footer className="relative mx-3 mt-16 overflow-hidden rounded-t-[20px] text-white sm:mx-5">
-      {settings.footerBackgroundUrl ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={settings.footerBackgroundUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          {/* Image stays visible — just enough of a dark wash for white text to read. */}
-          <div className="absolute inset-0 bg-black/20" />
-        </>
-      ) : (
-        <div className="absolute inset-0 bg-brand-ink" />
-      )}
+    <>
+      <footer className="relative mx-3 mt-16 overflow-hidden rounded-t-[20px] text-white sm:mx-5">
+        {settings.footerBackgroundUrl ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={settings.footerBackgroundUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            {/* Two stacked washes so a bright photo still reads as a moody, text-friendly backdrop. */}
+            <div className="absolute inset-0 bg-[rgba(5,10,15,0.78)]" />
+            <div className="absolute inset-0 bg-black/10" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-brand-ink" />
+        )}
 
-      <div className="relative container-page grid grid-cols-2 gap-8 py-14 sm:grid-cols-3 md:grid-cols-5">
-        <div className="col-span-2 sm:col-span-3 md:col-span-1">
-          <span className="font-display text-lg font-bold">{siteTitle}</span>
-          <p className="mt-2 max-w-[22ch] text-sm text-white/70">{description}</p>
-          <div className="mt-4 flex gap-3">
-            {(["instagram", "youtube", "facebook", "tiktok"] as const).map((k) =>
-              social[k] ? (
-                <a
-                  key={k}
-                  href={social[k]}
-                  aria-label={k}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-xs uppercase text-white/80 hover:border-white hover:text-white"
-                >
-                  {k[0]}
-                </a>
-              ) : null
+        <div className="relative grid grid-cols-1 gap-x-10 gap-y-12 px-6 py-14 sm:grid-cols-3 lg:grid-cols-6 lg:px-9">
+          <div className="sm:col-span-3 lg:col-span-2">
+            <span className="font-display text-lg font-bold">{siteTitle}</span>
+            <p className="mt-2 max-w-[32ch] text-sm text-white/80">{description}</p>
+            {socialLinks.length > 0 && (
+              <div className="mt-4 flex gap-3">
+                {socialLinks.map((k) => (
+                  <a
+                    key={k}
+                    href={social[k]}
+                    aria-label={k}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-xs uppercase text-white/80 hover:border-white hover:text-white"
+                  >
+                    {k[0]}
+                  </a>
+                ))}
+              </div>
             )}
+            <div className="mt-6 max-w-[280px]">
+              <h3 className="mb-3 text-[15px] font-bold">Stay in touch</h3>
+              <NewsletterForm />
+            </div>
+          </div>
+          <FooterColumn title="Shop" links={footerNav.shop} />
+          <FooterColumn title="Help" links={footerNav.help} />
+          <FooterColumn title="Company" links={footerNav.company} />
+          <div>
+            <FooterColumn title="Legal" links={footerNav.legal} />
+            <p className="mt-4 text-sm font-semibold text-white/90">
+              © {new Date().getFullYear()} {siteTitle}
+            </p>
           </div>
         </div>
-        <FooterColumn title="Shop" links={footerNav.shop} />
-        <FooterColumn title="Help" links={footerNav.help} />
-        <FooterColumn title="Company" links={footerNav.company} />
-        <div>
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/50">
-            Stay in touch
-          </h3>
-          <NewsletterForm />
-        </div>
-      </div>
 
-      <div className="relative border-t border-white/15">
-        <div className="container-page flex flex-col items-center justify-between gap-2 py-5 text-xs text-white/60 sm:flex-row">
-          <span>© {new Date().getFullYear()} {siteTitle}. All rights reserved.</span>
-          <div className="flex gap-4">
-            {footerNav.legal.map((l) => (
-              <Link key={l.href} href={l.href} className="hover:text-white">
-                {l.label}
-              </Link>
-            ))}
-          </div>
+        <div className="relative border-t border-white/15 py-4">
+          <p className="text-center text-[11px] text-white/70">
+            © {new Date().getFullYear()} {siteTitle}. All rights reserved.
+          </p>
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      <Link
+        href="/legal/accessibility"
+        aria-label="Accessibility statement"
+        className="fixed bottom-5 left-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl text-brand-ink shadow-lg hover:bg-brand-paper"
+      >
+        ♿
+      </Link>
+      <button
+        type="button"
+        title="Live chat coming soon"
+        className="fixed bottom-4 right-4 z-40 flex h-[62px] w-[62px] cursor-default items-center justify-center rounded-full border-[6px] border-brand-accent bg-white shadow-lg"
+      >
+        <span className="text-lg" aria-hidden>
+          💬
+        </span>
+        <span className="sr-only">Live chat — coming soon</span>
+      </button>
+    </>
   );
 }
