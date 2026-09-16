@@ -90,7 +90,7 @@ export function ShopGrid({
                   type="checkbox"
                   checked={compareIds.includes(p.id)}
                   onChange={() => toggleCompare(p.id)}
-                  className="accent-[color:var(--brand-primary)]"
+                  className="accent-[color:rgb(var(--brand-primary))]"
                 />
                 Compare
               </label>

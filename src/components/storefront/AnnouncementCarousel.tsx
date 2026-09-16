@@ -20,33 +20,57 @@ export function AnnouncementCarousel({ messages }: { messages: AnnouncementMessa
   if (messages.length === 0) return null;
   const current = messages[index];
 
+  const utilityLinkClass = "cursor-default whitespace-nowrap opacity-70";
+
   return (
-    <div className="flex h-9 items-center justify-center gap-3 bg-brand-ink px-3 text-xs text-brand-paper">
-      {multi && (
-        <button
-          aria-label="Previous message"
-          onClick={() => setIndex((i) => (i - 1 + messages.length) % messages.length)}
-          className="text-brand-paper/60 hover:text-brand-paper"
-        >
-          ‹
-        </button>
-      )}
-      {current.href ? (
-        <Link href={current.href} className="text-center underline decoration-brand-paper/40 underline-offset-2 hover:text-brand-paper">
-          {current.text}
-        </Link>
-      ) : (
-        <span className="text-center">{current.text}</span>
-      )}
-      {multi && (
-        <button
-          aria-label="Next message"
-          onClick={() => setIndex((i) => (i + 1) % messages.length)}
-          className="text-brand-paper/60 hover:text-brand-paper"
-        >
-          ›
-        </button>
-      )}
+    <div className="bg-brand-ink text-xs text-brand-paper">
+      <div className="container-page flex h-9 items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          {multi && (
+            <button
+              aria-label="Previous message"
+              onClick={() => setIndex((i) => (i - 1 + messages.length) % messages.length)}
+              className="flex-shrink-0 text-brand-paper/60 hover:text-brand-paper"
+            >
+              ‹
+            </button>
+          )}
+          {current.href ? (
+            <Link href={current.href} className="truncate underline decoration-brand-paper/40 underline-offset-2 hover:text-brand-paper">
+              {current.text}
+            </Link>
+          ) : (
+            <span className="truncate">{current.text}</span>
+          )}
+          {multi && (
+            <button
+              aria-label="Next message"
+              onClick={() => setIndex((i) => (i + 1) % messages.length)}
+              className="flex-shrink-0 text-brand-paper/60 hover:text-brand-paper"
+            >
+              ›
+            </button>
+          )}
+        </div>
+
+        {/* Decorative for now — no gift-card, corporate-gifting, store-locator,
+            or localization features exist behind these yet. */}
+        <div className="hidden flex-shrink-0 items-center gap-5 sm:flex">
+          <span className={utilityLinkClass} title="Coming soon">
+            Gift Cards
+          </span>
+          <span className={utilityLinkClass} title="Coming soon">
+            Corporate Gifting
+          </span>
+          <span className={utilityLinkClass} title="Coming soon">
+            Find In Store
+          </span>
+          <span className={`flex items-center gap-1.5 ${utilityLinkClass}`} title="Coming soon">
+            <span aria-hidden="true">🇺🇸</span>
+            US/EN
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
