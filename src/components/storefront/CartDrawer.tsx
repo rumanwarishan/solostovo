@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { brand } from "@/config/brand";
@@ -8,31 +7,9 @@ import { PlaceholderImage } from "./PlaceholderImage";
 
 export function CartDrawer() {
   const { lines, isOpen, closeCart, removeItem, setQuantity, subtotal, itemCount } = useCart();
-  const [checkingOut, setCheckingOut] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const remaining = Math.max(brand.freeShippingThreshold - subtotal, 0);
   const progress = Math.min((subtotal / brand.freeShippingThreshold) * 100, 100);
-
-  async function handleCheckout() {
-    setError(null);
-    setCheckingOut(true);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lines }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || "Checkout is not configured yet.");
-      }
-      window.location.href = data.url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
-      setCheckingOut(false);
-    }
-  }
 
   return (
     <>
@@ -79,11 +56,20 @@ export function CartDrawer() {
             <ul className="flex flex-col gap-4">
               {lines.map((line) => (
                 <li key={line.productId} className="flex gap-3">
-                  <PlaceholderImage
-                    tone={line.imageTone}
-                    label={line.name}
-                    className="h-16 w-16 flex-shrink-0"
-                  />
+                  {line.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={line.imageUrl}
+                      alt={line.name}
+                      className="h-16 w-16 flex-shrink-0 rounded-sm object-cover"
+                    />
+                  ) : (
+                    <PlaceholderImage
+                      tone={line.imageTone}
+                      label={line.name}
+                      className="h-16 w-16 flex-shrink-0"
+                    />
+                  )}
                   <div className="flex flex-1 flex-col gap-1">
                     <div className="flex items-start justify-between gap-2">
                       <Link href={`/product/${line.slug}`} onClick={closeCart} className="text-sm font-medium hover:text-brand-primary">
@@ -128,14 +114,16 @@ export function CartDrawer() {
             <span className="text-brand-ink/70">Subtotal</span>
             <span className="tabular font-medium">${subtotal.toFixed(2)}</span>
           </div>
-          {error && <p className="mb-2 text-xs text-brand-danger">{error}</p>}
-          <button
-            className="w-full rounded-sm bg-brand-primary py-3 text-sm font-medium text-white transition-colors hover:bg-brand-primary-dark disabled:opacity-50"
-            disabled={lines.length === 0 || checkingOut}
-            onClick={handleCheckout}
+          <Link
+            href="/checkout"
+            onClick={closeCart}
+            aria-disabled={lines.length === 0}
+            className={`block w-full rounded-sm bg-brand-primary py-3 text-center text-sm font-medium text-white transition-colors hover:bg-brand-primary-dark ${
+              lines.length === 0 ? "pointer-events-none opacity-50" : ""
+            }`}
           >
-            {checkingOut ? "Redirecting to checkout…" : "Checkout"}
-          </button>
+            Checkout
+          </Link>
           <p className="mt-2 text-center text-[11px] text-brand-ink/50">
             Secure checkout powered by Stripe
           </p>

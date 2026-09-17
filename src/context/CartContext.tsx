@@ -15,6 +15,7 @@ export type CartLine = {
   name: string;
   price: number;
   imageTone: string;
+  imageUrl?: string;
   quantity: number;
 };
 
@@ -25,6 +26,7 @@ export type CartableProduct = {
   name: string;
   price: number;
   imageTone: string;
+  imageUrl?: string;
 };
 
 type CartContextValue = {
@@ -86,6 +88,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           name: product.name,
           price: product.price,
           imageTone: product.imageTone,
+          imageUrl: product.imageUrl,
           quantity,
         },
       ];
