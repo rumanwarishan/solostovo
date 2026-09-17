@@ -166,6 +166,30 @@ export function normalizeCustomCode(raw: unknown): CustomCodeContent {
   return { header: data.header ?? "", sections, footer: data.footer ?? "" };
 }
 
+export type MarketingContent = { googleTagManagerId: string; metaPixelId: string };
+
+export const defaultMarketing: MarketingContent = { googleTagManagerId: "", metaPixelId: "" };
+
+const GTM_ID_PATTERN = /^GTM-[A-Z0-9]+$/i;
+const META_PIXEL_ID_PATTERN = /^[0-9]{5,20}$/;
+
+export function isValidGtmId(id: string): boolean {
+  return id === "" || GTM_ID_PATTERN.test(id);
+}
+
+export function isValidMetaPixelId(id: string): boolean {
+  return id === "" || META_PIXEL_ID_PATTERN.test(id);
+}
+
+/** Fills in fields for a marketing block saved before one was added. */
+export function normalizeMarketing(raw: unknown): MarketingContent {
+  const data = (raw ?? {}) as Partial<MarketingContent>;
+  return {
+    googleTagManagerId: typeof data.googleTagManagerId === "string" ? data.googleTagManagerId : "",
+    metaPixelId: typeof data.metaPixelId === "string" ? data.metaPixelId : "",
+  };
+}
+
 type ContentRow = { data: unknown };
 
 async function getContent<T>(key: string, fallback: T): Promise<T> {
@@ -222,3 +246,8 @@ export const getCustomCode = cache(async () =>
   normalizeCustomCode(await getContent<unknown>("customCode", defaultCustomCode))
 );
 export const setCustomCode = (data: CustomCodeContent) => setContent("customCode", data);
+
+export const getMarketingContent = cache(async () =>
+  normalizeMarketing(await getContent<unknown>("marketing", defaultMarketing))
+);
+export const setMarketingContent = (data: MarketingContent) => setContent("marketing", data);

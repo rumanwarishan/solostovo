@@ -30,6 +30,13 @@ const icons: Record<string, React.ReactNode> = {
     <path d="M2.5 5.5h15v9h-15v-9Zm0 3.5h15M5.5 12h3" strokeLinejoin="round" />
   ),
   code: <path d="M7 5.5 2.5 10 7 14.5M13 5.5l4.5 4.5-4.5 4.5M11.5 3.5l-3 13" strokeLinejoin="round" />,
+  marketing: (
+    <path
+      d="M3 8.5h3.5L11 4v12l-4.5-4.5H3v-3Zm12.5-1a4 4 0 0 1 0 5M17.5 5.5a7 7 0 0 1 0 9"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+  ),
   settings: (
     <path
       d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm7-2.5a6.9 6.9 0 0 0-.14-1.4l1.8-1.4-1.5-2.6-2.1.85a7 7 0 0 0-2.42-1.4L12.3 2h-4.6l-.34 2.15a7 7 0 0 0-2.42 1.4l-2.1-.85-1.5 2.6 1.8 1.4A6.9 6.9 0 0 0 3 10c0 .48.05.94.14 1.4l-1.8 1.4 1.5 2.6 2.1-.85a7 7 0 0 0 2.42 1.4L7.7 18h4.6l.34-2.15a7 7 0 0 0 2.42-1.4l2.1.85 1.5-2.6-1.8-1.4c.09-.46.14-.92.14-1.4Z"
@@ -60,6 +67,7 @@ const groups = [
     label: "Site",
     links: [
       { href: "/admin/content", label: "Content", icon: "content" },
+      { href: "/admin/marketing", label: "Marketing", icon: "marketing" },
       { href: "/admin/custom-code", label: "Custom code", icon: "code" },
       { href: "/admin/settings", label: "Settings", icon: "settings" },
       { href: "/admin/users", label: "Admin accounts", icon: "users" },
