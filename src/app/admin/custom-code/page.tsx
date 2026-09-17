@@ -12,7 +12,8 @@ export default async function AdminCustomCodePage() {
     <div>
       <h1 className="font-display text-2xl font-bold">Custom code</h1>
       <p className="mt-1 text-sm text-brand-ink/60">
-        Insert your own HTML, CSS, or JavaScript into the header, content, or footer area.
+        Insert your own HTML, CSS, or JavaScript into every page&apos;s &lt;head&gt; or just before
+        &lt;/body&gt;. For visible HTML blocks on the homepage, add those from Content instead.
       </p>
 
       {!dbConfigured && (

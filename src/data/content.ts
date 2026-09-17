@@ -247,6 +247,12 @@ export const getCustomCode = cache(async () =>
 );
 export const setCustomCode = (data: CustomCodeContent) => setContent("customCode", data);
 
+/** Updates just the homepage custom-HTML sections, leaving header/footer custom code untouched. */
+export async function setCustomCodeSections(sections: CustomHtmlSection[]): Promise<void> {
+  const current = normalizeCustomCode(await getContent<unknown>("customCode", defaultCustomCode));
+  await setContent("customCode", { ...current, sections });
+}
+
 export const getMarketingContent = cache(async () =>
   normalizeMarketing(await getContent<unknown>("marketing", defaultMarketing))
 );

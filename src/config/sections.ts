@@ -27,10 +27,10 @@ export const sectionLabels: Record<SectionKey, string> = {
 export const defaultSectionOrder: SectionKey[] = [
   "hero",
   "valueProps",
-  "customHtml",
   "bestSellers",
   "categories",
   "trust",
   "reviews",
   "community",
+  "customHtml",
 ];

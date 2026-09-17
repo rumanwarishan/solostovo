@@ -10,6 +10,7 @@ import type {
   TrustContent,
   CommunityContent,
   HeroSlide,
+  CustomHtmlSection,
 } from "@/data/content";
 
 const inputClass =
@@ -35,12 +36,14 @@ export function ContentForm({
   initialValueProps,
   initialTrust,
   initialCommunity,
+  initialCustomSections,
 }: {
   initialHero: HeroContent;
   initialAnnouncements: AnnouncementContent;
   initialValueProps: ValuePropsContent;
   initialTrust: TrustContent;
   initialCommunity: CommunityContent;
+  initialCustomSections: CustomHtmlSection[];
 }) {
   const router = useRouter();
   const [hero, setHero] = useState(initialHero);
@@ -48,6 +51,7 @@ export function ContentForm({
   const [valueProps, setValueProps] = useState(initialValueProps.items);
   const [trust, setTrust] = useState(initialTrust.names);
   const [community, setCommunity] = useState(initialCommunity.posts);
+  const [customSections, setCustomSections] = useState(initialCustomSections);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -70,6 +74,7 @@ export function ContentForm({
           valueProps: { items: valueProps.filter((v) => v.trim() !== "") },
           trust: { names: trust.filter((v) => v.trim() !== "") },
           community: { posts: community.filter((p) => p.title.trim() !== "") },
+          customSections: customSections.filter((s) => s.html.trim() !== ""),
         }),
       });
       const data = await res.json();
@@ -327,6 +332,66 @@ export function ContentForm({
             className="self-start text-xs font-medium text-brand-primary hover:underline"
           >
             + Add post
+          </button>
+        </div>
+      </section>
+
+      {/* Custom HTML sections */}
+      <section className="mb-10">
+        <h2 className="font-display text-lg font-bold">Custom HTML sections</h2>
+        <p className="mt-1 text-xs text-brand-ink/60">
+          Add as many raw-HTML blocks as you want — banners, embeds, whatever you need. These only
+          appear on the homepage, together, wherever you drag &quot;Custom HTML sections&quot; to
+          in the section order above (drag it below &quot;From the community&quot; to show them
+          there).
+        </p>
+        <div className="mt-3 flex flex-col gap-4">
+          {customSections.map((section, i) => (
+            <div key={section.id} className="rounded-sm border border-brand-line bg-brand-surface p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <input
+                  placeholder={`Section ${i + 1} name (for your reference only)`}
+                  className="w-full rounded-sm border border-brand-line bg-white px-2 py-1 text-sm outline-none focus:border-brand-primary"
+                  value={section.label}
+                  onChange={(e) =>
+                    setCustomSections(
+                      customSections.map((s, idx) => (idx === i ? { ...s, label: e.target.value } : s))
+                    )
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setCustomSections(customSections.filter((_, idx) => idx !== i))}
+                  className="whitespace-nowrap px-2 text-xs text-brand-ink/40 hover:text-brand-danger"
+                >
+                  Remove
+                </button>
+              </div>
+              <textarea
+                rows={5}
+                spellCheck={false}
+                placeholder="<div>Your HTML here…</div>"
+                className={`${inputClass} font-mono text-xs`}
+                value={section.html}
+                onChange={(e) =>
+                  setCustomSections(
+                    customSections.map((s, idx) => (idx === i ? { ...s, html: e.target.value } : s))
+                  )
+                }
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setCustomSections([
+                ...customSections,
+                { id: crypto.randomUUID(), label: "", html: "" } as CustomHtmlSection,
+              ])
+            }
+            className="self-start text-xs font-medium text-brand-primary hover:underline"
+          >
+            + Add HTML section
           </button>
         </div>
       </section>

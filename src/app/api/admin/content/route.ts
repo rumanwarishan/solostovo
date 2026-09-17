@@ -5,6 +5,7 @@ import {
   setValueProps,
   setTrustContent,
   setCommunityContent,
+  setCustomCodeSections,
 } from "@/data/content";
 import { isDbConfigured } from "@/lib/db";
 
@@ -28,6 +29,7 @@ export async function PUT(req: NextRequest) {
       setValueProps(body.valueProps),
       setTrustContent(body.trust),
       setCommunityContent(body.community),
+      setCustomCodeSections(Array.isArray(body.customSections) ? body.customSections : []),
     ]);
     return NextResponse.json({ ok: true });
   } catch (e) {

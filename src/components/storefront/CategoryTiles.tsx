@@ -24,7 +24,7 @@ export async function CategoryTiles() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={c.imageUrl} alt={c.name} className="h-full w-full object-contain" />
               </div>
-              <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
+              <span className="mt-2 block text-center text-sm font-medium group-hover:text-brand-primary">
                 {c.name}
               </span>
             </Link>
@@ -35,7 +35,7 @@ export async function CategoryTiles() {
                 label={c.name}
                 className="aspect-[4/3] w-full"
               />
-              <span className="mt-2 block text-sm font-medium group-hover:text-brand-primary">
+              <span className="mt-2 block text-center text-sm font-medium group-hover:text-brand-primary">
                 {c.name}
               </span>
             </Link>

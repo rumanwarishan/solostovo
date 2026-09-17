@@ -5,6 +5,7 @@ import {
   getTrustContent,
   getCommunityContent,
   getSettings,
+  getCustomCode,
 } from "@/data/content";
 import { ContentForm } from "@/components/admin/ContentForm";
 import { SectionOrderEditor } from "@/components/admin/SectionOrderEditor";
@@ -13,13 +14,14 @@ import { isDbConfigured } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export default async function AdminContentPage() {
-  const [hero, announcements, valueProps, trust, community, settings] = await Promise.all([
+  const [hero, announcements, valueProps, trust, community, settings, customCode] = await Promise.all([
     getHeroContent(),
     getAnnouncements(),
     getValueProps(),
     getTrustContent(),
     getCommunityContent(),
     getSettings(),
+    getCustomCode(),
   ]);
   const dbConfigured = isDbConfigured();
 
@@ -46,6 +48,7 @@ export default async function AdminContentPage() {
           initialValueProps={valueProps}
           initialTrust={trust}
           initialCommunity={community}
+          initialCustomSections={customCode.sections}
         />
       </div>
     </div>
