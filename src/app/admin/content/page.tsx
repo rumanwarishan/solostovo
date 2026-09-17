@@ -38,7 +38,7 @@ export default async function AdminContentPage() {
       )}
 
       <div className="mt-6 max-w-3xl">
-        <SectionOrderEditor initialOrder={settings.sectionOrder} />
+        <SectionOrderEditor initialOrder={settings.sectionOrder} initialSections={settings.sections} />
       </div>
 
       <div className="mt-2">

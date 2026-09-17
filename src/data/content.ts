@@ -242,6 +242,12 @@ export async function setSectionOrder(order: SectionKey[]): Promise<void> {
   await setContent("settings", { ...current, sectionOrder: order });
 }
 
+/** Shows or hides one homepage section, leaving every other setting untouched. */
+export async function setSectionVisible(key: keyof SectionVisibility, visible: boolean): Promise<void> {
+  const current = normalizeSettings(await getContent<SiteSettings>("settings", defaultSettings));
+  await setContent("settings", { ...current, sections: { ...current.sections, [key]: visible } });
+}
+
 export const getCustomCode = cache(async () =>
   normalizeCustomCode(await getContent<unknown>("customCode", defaultCustomCode))
 );
