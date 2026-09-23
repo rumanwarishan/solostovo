@@ -3,7 +3,8 @@ import path from "path";
 import { isDbConfigured, query } from "@/lib/db";
 import { getProductById } from "./products";
 
-export type OrderStatus = "paid" | "processing" | "shipped" | "refunded";
+export type OrderStatus = "pending_payment" | "paid" | "processing" | "shipped" | "refunded";
+export type OrderSource = "seed" | "stripe" | "bank_transfer" | "cash_on_delivery";
 
 export type OrderItem = {
   productId: string | null;
@@ -20,7 +21,7 @@ export type Order = {
   total: number;
   status: OrderStatus;
   createdAt: string; // ISO date
-  source: "seed" | "stripe";
+  source: OrderSource;
 };
 
 /** Used until a database is connected. */
@@ -111,7 +112,7 @@ type OrderRow = {
   customer_name: string;
   total: string;
   status: OrderStatus;
-  source: "seed" | "stripe";
+  source: OrderSource;
   created_at: string;
 };
 
@@ -178,7 +179,15 @@ export async function createOrder(order: Order): Promise<void> {
   }
   await query(
     "INSERT INTO orders (id, customer_email, customer_name, total, status, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [order.id, order.customerEmail, order.customerName, order.total, order.status, order.source, order.createdAt]
+    [
+      order.id,
+      order.customerEmail,
+      order.customerName,
+      order.total,
+      order.status,
+      order.source,
+      new Date(order.createdAt),
+    ]
   );
   for (const item of order.items) {
     await query(

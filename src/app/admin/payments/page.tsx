@@ -1,7 +1,8 @@
-import { getPaymentStatus } from "@/data/payment-settings";
+import { getPaymentStatus, getManualPaymentMethods } from "@/data/payment-settings";
 import { isDbConfigured } from "@/lib/db";
 import { StripeConnectForm } from "@/components/admin/StripeConnectForm";
 import { PaypalConnectForm } from "@/components/admin/PaypalConnectForm";
+import { ManualPaymentsForm } from "@/components/admin/ManualPaymentsForm";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ function StatusPill({ ok, label }: { ok: boolean; label: string }) {
 export default async function AdminPaymentsPage() {
   const dbReady = isDbConfigured();
   const status = await getPaymentStatus();
+  const manual = await getManualPaymentMethods();
 
   return (
     <div>
@@ -113,15 +115,19 @@ export default async function AdminPaymentsPage() {
           )}
         </div>
 
-        <div className="rounded-sm border border-brand-line bg-brand-surface p-5 opacity-60">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-display text-lg font-bold">Manual / Cash on delivery</h2>
-              <p className="mt-1 text-sm text-brand-ink/60">Not built yet.</p>
+        {dbReady ? (
+          <ManualPaymentsForm bankTransfer={manual.bank_transfer} cashOnDelivery={manual.cash_on_delivery} />
+        ) : (
+          <div className="rounded-sm border border-brand-line bg-brand-surface p-5 opacity-60">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-lg font-bold">Bank transfer &amp; Cash on delivery</h2>
+                <p className="mt-1 text-sm text-brand-ink/60">Requires a database to configure.</p>
+              </div>
+              <StatusPill ok={false} label="Not connected" />
             </div>
-            <StatusPill ok={false} label="Coming soon" />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -138,6 +138,37 @@ export function SettingsForm({ initial }: { initial: SiteSettings }) {
       </section>
 
       <section className="mb-10">
+        <h2 className="font-display text-lg font-bold">Location popup</h2>
+        <p className="mt-1 text-xs text-brand-ink/60">
+          Detects the visitor&apos;s country from their browser. Shown once per visitor: a
+          newsletter signup if they&apos;re in your store country, or a shipping notice if
+          they&apos;re somewhere else.
+        </p>
+        <div className="mt-4 flex flex-col gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.enableLocationPopup}
+              onChange={(e) => update("enableLocationPopup", e.target.checked)}
+            />
+            Show location popup to visitors
+          </label>
+          <div className="max-w-xs">
+            <label className={labelClass}>Store country</label>
+            <input
+              className={inputClass}
+              value={form.storeCountry}
+              onChange={(e) => update("storeCountry", e.target.value)}
+            />
+            <p className="mt-1 text-xs text-brand-ink/50">
+              Must match how the country is written by the visitor&apos;s browser locale, e.g.
+              &quot;United States&quot;.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-10">
         <h2 className="font-display text-lg font-bold">Homepage sections</h2>
         <p className="mt-1 text-xs text-brand-ink/60">
           Show or hide individual sections without deleting their content.

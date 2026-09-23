@@ -70,7 +70,7 @@ export default async function AdminOrderDetailPage({
             <div className="mt-3 text-xs text-brand-ink/50">
               Placed {new Date(order.createdAt).toLocaleString()}
             </div>
-            <div className="mt-1 text-xs uppercase text-brand-ink/40">Source: {order.source}</div>
+            <div className="mt-1 text-xs uppercase text-brand-ink/40">Source: {order.source.replace("_", " ")}</div>
           </div>
         </div>
       </div>

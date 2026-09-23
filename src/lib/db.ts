@@ -163,6 +163,41 @@ async function migrate(): Promise<void> {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
+  // Manual payment options (bank transfer, cash on delivery) — no
+  // third-party account to connect, just an on/off switch and the
+  // instructions shown to the customer at checkout when enabled.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS manual_payment_methods (
+      method VARCHAR(32) PRIMARY KEY,
+      enabled TINYINT(1) NOT NULL DEFAULT 0,
+      instructions TEXT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  // Newsletter signups — from the footer form and the location/newsletter
+  // popup. Re-running this ON DUPLICATE-safe insert is handled at the
+  // query site, not here.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+      email VARCHAR(255) PRIMARY KEY,
+      source VARCHAR(64) NOT NULL DEFAULT 'footer',
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  // Widens the orders status/source enums for manual-payment orders
+  // (pending_payment until the store owner confirms the bank transfer or
+  // collects cash on delivery). Re-running MODIFY COLUMN with the same
+  // definition is a no-op, so this is safe on every boot.
+  await db.query(`
+    ALTER TABLE orders
+      MODIFY COLUMN status ENUM('pending_payment','paid','processing','shipped','refunded') NOT NULL DEFAULT 'paid'
+  `);
+  await db.query(`
+    ALTER TABLE orders
+      MODIFY COLUMN source ENUM('seed','stripe','bank_transfer','cash_on_delivery') NOT NULL DEFAULT 'stripe'
+  `);
+
   // First-run bootstrap: seed one admin account from the env-var
   // credentials so a fresh database doesn't lock you out. Once this row
   // exists, ADMIN_USER/ADMIN_PASSWORD are no longer read for login —

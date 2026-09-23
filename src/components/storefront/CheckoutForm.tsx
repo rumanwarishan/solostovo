@@ -2,22 +2,36 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { brand } from "@/config/brand";
 import { PlaceholderImage } from "./PlaceholderImage";
+import type { ManualPaymentMethod } from "@/data/payment-settings";
+
+type Method = "card" | "bank_transfer" | "cash_on_delivery";
 
 export function CheckoutForm({
   stripeConnected,
   paypalConnected,
+  bankTransfer,
+  cashOnDelivery,
 }: {
   stripeConnected: boolean;
   paypalConnected: boolean;
+  bankTransfer: ManualPaymentMethod;
+  cashOnDelivery: ManualPaymentMethod;
 }) {
-  const { lines, subtotal } = useCart();
+  const router = useRouter();
+  const { lines, subtotal, clearCart } = useCart();
   const [checkingOut, setCheckingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
 
-  const anyMethodConnected = stripeConnected || paypalConnected;
+  const anyMethodConnected = stripeConnected || bankTransfer.enabled || cashOnDelivery.enabled;
+  const [method, setMethod] = useState<Method>(() =>
+    stripeConnected ? "card" : bankTransfer.enabled ? "bank_transfer" : "cash_on_delivery"
+  );
 
   async function handlePayWithCard() {
     setError(null);
@@ -37,6 +51,36 @@ export function CheckoutForm({
       setError(e instanceof Error ? e.message : "Something went wrong.");
       setCheckingOut(false);
     }
+  }
+
+  async function handlePlaceManualOrder(manualMethod: "bank_transfer" | "cash_on_delivery") {
+    setError(null);
+    if (!customerName.trim() || !customerEmail.trim()) {
+      setError("Name and email are required.");
+      return;
+    }
+    setCheckingOut(true);
+    try {
+      const res = await fetch("/api/checkout/manual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lines, method: manualMethod, customerName, customerEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.orderId) {
+        throw new Error(data.error || "Something went wrong placing your order.");
+      }
+      clearCart();
+      router.push(`/checkout/success?order=${data.orderId}&method=${manualMethod}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setCheckingOut(false);
+    }
+  }
+
+  function handleContinue() {
+    if (method === "card") return handlePayWithCard();
+    return handlePlaceManualOrder(method);
   }
 
   if (lines.length === 0) {
@@ -72,39 +116,117 @@ export function CheckoutForm({
         <div className="mt-4 flex flex-col gap-3">
           <label
             className={`flex items-center gap-3 rounded-sm border px-4 py-3 ${
-              stripeConnected ? "border-brand-primary bg-brand-primary-soft/40" : "border-brand-line opacity-50"
+              !stripeConnected
+                ? "border-brand-line opacity-50"
+                : method === "card"
+                  ? "border-brand-primary bg-brand-primary-soft/40"
+                  : "border-brand-line"
             }`}
           >
-            <input type="radio" name="payment-method" defaultChecked={stripeConnected} disabled={!stripeConnected} readOnly />
+            <input
+              type="radio"
+              name="payment-method"
+              checked={method === "card"}
+              disabled={!stripeConnected}
+              onChange={() => setMethod("card")}
+            />
             <span className="flex-1 text-sm font-medium">Credit or debit card</span>
-            <span className="text-xs text-brand-ink/50">
-              {stripeConnected ? "via Stripe" : "Not connected"}
-            </span>
+            <span className="text-xs text-brand-ink/50">{stripeConnected ? "via Stripe" : "Not connected"}</span>
           </label>
 
-          <label
-            className={`flex items-center gap-3 rounded-sm border px-4 py-3 ${
-              paypalConnected ? "border-brand-line" : "border-brand-line opacity-50"
-            }`}
-          >
+          <label className="flex items-center gap-3 rounded-sm border border-brand-line px-4 py-3 opacity-50">
             <input type="radio" name="payment-method" disabled readOnly />
             <span className="flex-1 text-sm font-medium">PayPal</span>
-            <span className="text-xs text-brand-ink/50">
-              {paypalConnected ? "Coming soon" : "Not connected"}
-            </span>
+            <span className="text-xs text-brand-ink/50">{paypalConnected ? "Coming soon" : "Not connected"}</span>
           </label>
+
+          {bankTransfer.enabled && (
+            <label
+              className={`flex items-center gap-3 rounded-sm border px-4 py-3 ${
+                method === "bank_transfer" ? "border-brand-primary bg-brand-primary-soft/40" : "border-brand-line"
+              }`}
+            >
+              <input
+                type="radio"
+                name="payment-method"
+                checked={method === "bank_transfer"}
+                onChange={() => setMethod("bank_transfer")}
+              />
+              <span className="flex-1 text-sm font-medium">Bank transfer</span>
+            </label>
+          )}
+
+          {cashOnDelivery.enabled && (
+            <label
+              className={`flex items-center gap-3 rounded-sm border px-4 py-3 ${
+                method === "cash_on_delivery" ? "border-brand-primary bg-brand-primary-soft/40" : "border-brand-line"
+              }`}
+            >
+              <input
+                type="radio"
+                name="payment-method"
+                checked={method === "cash_on_delivery"}
+                onChange={() => setMethod("cash_on_delivery")}
+              />
+              <span className="flex-1 text-sm font-medium">Cash on delivery</span>
+            </label>
+          )}
         </div>
 
+        {method === "bank_transfer" && bankTransfer.instructions && (
+          <p className="mt-3 whitespace-pre-line rounded-sm border border-dashed border-brand-line bg-brand-surface p-3 text-sm text-brand-ink/70">
+            {bankTransfer.instructions}
+          </p>
+        )}
+        {method === "cash_on_delivery" && cashOnDelivery.instructions && (
+          <p className="mt-3 whitespace-pre-line rounded-sm border border-dashed border-brand-line bg-brand-surface p-3 text-sm text-brand-ink/70">
+            {cashOnDelivery.instructions}
+          </p>
+        )}
+
+        {(method === "bank_transfer" || method === "cash_on_delivery") && (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-brand-ink/50">
+                Full name
+              </label>
+              <input
+                className="w-full rounded-sm border border-brand-line bg-brand-surface px-3 py-2 text-sm outline-none focus:border-brand-primary"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-brand-ink/50">
+                Email
+              </label>
+              <input
+                type="email"
+                className="w-full rounded-sm border border-brand-line bg-brand-surface px-3 py-2 text-sm outline-none focus:border-brand-primary"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
         <button
-          onClick={handlePayWithCard}
-          disabled={!stripeConnected || checkingOut}
+          onClick={handleContinue}
+          disabled={!anyMethodConnected || checkingOut}
           className="mt-6 w-full rounded-sm bg-brand-primary py-3 text-sm font-medium text-white hover:bg-brand-primary-dark disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-8"
         >
-          {checkingOut ? "Redirecting to Stripe…" : "Continue to payment"}
+          {checkingOut
+            ? method === "card"
+              ? "Redirecting to Stripe…"
+              : "Placing order…"
+            : method === "card"
+              ? "Continue to payment"
+              : "Place order"}
         </button>
         <p className="mt-3 text-xs text-brand-ink/50">
-          You&apos;ll enter your card details on Stripe&apos;s secure checkout page, then return
-          here to confirm your order.
+          {method === "card"
+            ? "You'll enter your card details on Stripe's secure checkout page, then return here to confirm your order."
+            : "Your order is placed immediately — no card details needed."}
         </p>
       </div>
 

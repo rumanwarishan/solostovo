@@ -50,6 +50,13 @@ const icons: Record<string, React.ReactNode> = {
       strokeLinecap="round"
     />
   ),
+  newsletter: (
+    <path
+      d="M2.5 5.5h15v9h-15v-9Zm0 0 7.5 6 7.5-6"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+  ),
 };
 
 const groups = [
@@ -67,6 +74,7 @@ const groups = [
     label: "Site",
     links: [
       { href: "/admin/content", label: "Content", icon: "content" },
+      { href: "/admin/newsletter", label: "Newsletter", icon: "newsletter" },
       { href: "/admin/marketing", label: "Marketing", icon: "marketing" },
       { href: "/admin/custom-code", label: "Custom code", icon: "code" },
       { href: "/admin/settings", label: "Settings", icon: "settings" },

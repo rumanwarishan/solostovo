@@ -47,7 +47,7 @@ export default async function AdminOrdersPage() {
                 <td className="px-4 py-3 text-right">
                   <StatusPill status={o.status} />
                 </td>
-                <td className="px-4 py-3 text-right text-xs uppercase text-brand-ink/40">{o.source}</td>
+                <td className="px-4 py-3 text-right text-xs uppercase text-brand-ink/40">{o.source.replace("_", " ")}</td>
               </tr>
             ))}
           </tbody>

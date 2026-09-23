@@ -105,6 +105,8 @@ export type SiteSettings = {
   showFooter: boolean;
   sections: SectionVisibility;
   sectionOrder: SectionKey[];
+  enableLocationPopup: boolean;
+  storeCountry: string;
 };
 
 export const defaultSectionVisibility: SectionVisibility = {
@@ -130,6 +132,8 @@ export const defaultSettings: SiteSettings = {
   showFooter: true,
   sections: { ...defaultSectionVisibility },
   sectionOrder: [...defaultSectionOrder],
+  enableLocationPopup: true,
+  storeCountry: "United States",
 };
 
 /** Fills in `sections`/`sectionOrder` for settings saved before those fields existed, and folds
@@ -142,6 +146,7 @@ export function normalizeSettings(settings: SiteSettings): SiteSettings {
     ...defaultSectionOrder.filter((key) => !saved.includes(key)),
   ];
   return {
+    ...defaultSettings,
     ...settings,
     sections: { ...defaultSectionVisibility, ...settings.sections },
     sectionOrder: order,

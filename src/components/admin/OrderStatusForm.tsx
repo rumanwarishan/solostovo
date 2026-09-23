@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { OrderStatus } from "@/data/orders";
 
-const STATUSES: OrderStatus[] = ["paid", "processing", "shipped", "refunded"];
+const STATUSES: OrderStatus[] = ["pending_payment", "paid", "processing", "shipped", "refunded"];
 
 export function OrderStatusForm({ orderId, status }: { orderId: string; status: OrderStatus }) {
   const router = useRouter();
@@ -43,7 +43,7 @@ export function OrderStatusForm({ orderId, status }: { orderId: string; status: 
       >
         {STATUSES.map((s) => (
           <option key={s} value={s}>
-            {s}
+            {s.replace("_", " ")}
           </option>
         ))}
       </select>

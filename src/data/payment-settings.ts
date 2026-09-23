@@ -88,3 +88,43 @@ export async function getPaymentStatus(): Promise<PaymentStatus> {
     paypalMode: creds.paypalMode,
   };
 }
+
+/** Manual payment options — no account to connect, just on/off + the instructions shown at checkout. */
+export type ManualMethodKey = "bank_transfer" | "cash_on_delivery";
+export type ManualPaymentMethod = { enabled: boolean; instructions: string };
+export type ManualPaymentMethods = Record<ManualMethodKey, ManualPaymentMethod>;
+
+const MANUAL_METHOD_KEYS: ManualMethodKey[] = ["bank_transfer", "cash_on_delivery"];
+
+const emptyManualMethods: ManualPaymentMethods = {
+  bank_transfer: { enabled: false, instructions: "" },
+  cash_on_delivery: { enabled: false, instructions: "" },
+};
+
+type ManualMethodRow = { method: ManualMethodKey; enabled: number; instructions: string | null };
+
+export async function getManualPaymentMethods(): Promise<ManualPaymentMethods> {
+  if (!isDbConfigured()) return emptyManualMethods;
+  const rows = await query<ManualMethodRow[]>(
+    "SELECT method, enabled, instructions FROM manual_payment_methods"
+  );
+  const result: ManualPaymentMethods = { ...emptyManualMethods };
+  for (const row of rows) {
+    if (!MANUAL_METHOD_KEYS.includes(row.method)) continue;
+    result[row.method] = { enabled: Boolean(row.enabled), instructions: row.instructions ?? "" };
+  }
+  return result;
+}
+
+export async function setManualPaymentMethod(
+  method: ManualMethodKey,
+  patch: Partial<ManualPaymentMethod>
+): Promise<void> {
+  const current = (await getManualPaymentMethods())[method];
+  const merged = { ...current, ...patch };
+  await query(
+    `INSERT INTO manual_payment_methods (method, enabled, instructions) VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE enabled = VALUES(enabled), instructions = VALUES(instructions)`,
+    [method, merged.enabled ? 1 : 0, merged.instructions]
+  );
+}

@@ -5,6 +5,7 @@ import { brand } from "@/config/brand";
 import { getSettings, getCustomCode, getMarketingContent } from "@/data/content";
 import { RawCodeInjector } from "@/components/RawCodeInjector";
 import { MarketingScripts, GtmNoScript } from "@/components/MarketingScripts";
+import { LocationNotice } from "@/components/storefront/LocationNotice";
 
 const bodyFont = Inter({
   variable: "--font-body",
@@ -27,7 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [customCode, marketing] = await Promise.all([getCustomCode(), getMarketingContent()]);
+  const [customCode, marketing, settings] = await Promise.all([
+    getCustomCode(),
+    getMarketingContent(),
+    getSettings(),
+  ]);
 
   return (
     <html
@@ -43,6 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <RawCodeInjector html={customCode.header} target="head" />
         <RawCodeInjector html={customCode.footer} target="body" />
         <MarketingScripts gtmId={marketing.googleTagManagerId} metaPixelId={marketing.metaPixelId} />
+        <LocationNotice enabled={settings.enableLocationPopup} storeCountry={settings.storeCountry} />
       </body>
     </html>
   );
